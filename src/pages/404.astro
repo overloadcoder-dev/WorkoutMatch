@@ -1,0 +1,84 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="Page Not Found"
+  description="The WorkoutMatch page you requested could not be found. Build a workout, use the quick matcher, or browse curated sessions."
+  path="/404/"
+  noindex
+  bodyClass="not-found-page"
+>
+  <section
+    class="container section not-found"
+    aria-labelledby="not-found-heading"
+  >
+    <div class="error-code" aria-hidden="true">404</div>
+    <div class="card card-pad error-card">
+      <p class="eyebrow">That route did not match</p>
+      <h1 id="not-found-heading">Page not found</h1>
+      <p class="lede">
+        The address may be mistyped, or the page may have moved. Your locally
+        saved workout data has not been changed by reaching this page.
+      </p>
+      <div class="button-row">
+        <a class="button" href="/quick-workout/">Get a quick workout</a>
+        <a class="button button-secondary" href="/">Go to the home page</a>
+      </div>
+      <nav aria-label="Useful alternatives">
+        <h2>Or continue here</h2>
+        <ul>
+          <li><a href="/generate/">Build a constraint-aware workout</a></li>
+          <li><a href="/workouts/">Browse curated workouts</a></li>
+          <li><a href="/exercises/">Search the exercise library</a></li>
+          <li><a href="/calculators/">Open the adult calculators</a></li>
+        </ul>
+      </nav>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .not-found {
+    display: grid;
+    min-height: 65svh;
+    place-items: center;
+  }
+
+  .error-code {
+    color: color-mix(in srgb, var(--color-primary) 20%, transparent);
+    font-family: var(--font-display);
+    font-size: clamp(8rem, 36vw, 22rem);
+    font-weight: 850;
+    line-height: 0.65;
+    letter-spacing: -0.08em;
+    user-select: none;
+  }
+
+  .error-card {
+    z-index: 1;
+    width: min(100%, 44rem);
+    margin-top: clamp(-6rem, -10vw, -3rem);
+  }
+
+  .error-card h1 {
+    font-size: clamp(2.4rem, 7vw, 4.4rem);
+  }
+
+  nav {
+    margin-top: 2rem;
+    border-top: 1px solid var(--color-border);
+    padding-top: 1.5rem;
+  }
+
+  nav h2 {
+    font-size: 1.35rem;
+  }
+
+  nav ul {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+    gap: 0.6rem 1rem;
+    padding-left: 1.25rem;
+  }
+</style>

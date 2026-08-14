@@ -1,0 +1,82 @@
+---
+import BmrCalculator from '../../components/calculators/BmrCalculator.astro';
+import FaqList from '../../components/content/FaqList.astro';
+import Breadcrumbs from '../../components/layout/Breadcrumbs.astro';
+import { CITATIONS } from '../../data/citations';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const faqs = [
+  {
+    question: 'Is BMR measured here?',
+    answer:
+      'No. This calculator predicts resting energy expenditure from a published equation. A measured value requires appropriate clinical equipment and procedure.',
+  },
+  {
+    question: 'Why does the equation ask for sex?',
+    answer:
+      'The published model uses different constants for male and female study groups. You can show both estimates if selecting one is not useful to you.',
+  },
+  {
+    question: 'Is BMR the same as daily energy need?',
+    answer:
+      'No. BMR represents a resting estimate. Total daily expenditure also depends on activity and many individual factors.',
+  },
+];
+---
+
+<BaseLayout
+  title="Mifflin–St Jeor BMR calculator"
+  description="Estimate adult resting energy expenditure with the Mifflin–St Jeor equations in metric or imperial units and review the formula limitations."
+  path="/calculators/bmr/"
+>
+  <div class="container">
+    <Breadcrumbs
+      items={[
+        { label: 'Home', href: '/' },
+        { label: 'Calculators', href: '/calculators/' },
+        { label: 'BMR' },
+      ]}
+    />
+  </div>
+  <header class="section-sm narrow">
+    <p class="eyebrow">Resting energy estimate</p>
+    <h1>Mifflin–St Jeor BMR calculator</h1>
+    <p class="lede">
+      Estimate resting energy expenditure for adults with the published
+      Mifflin–St Jeor equations. The result is a prediction, not a metabolic
+      measurement.
+    </p>
+  </header>
+  <div class="container"><BmrCalculator /></div>
+  <section class="narrow section prose">
+    <h2>Equations used</h2>
+    <p>
+      Using kilograms for weight (W), centimetres for height (H), and years for
+      age (A):
+    </p>
+    <ul>
+      <li><strong>Male equation:</strong> 10W + 6.25H − 5A + 5</li>
+      <li><strong>Female equation:</strong> 10W + 6.25H − 5A − 161</li>
+    </ul>
+    <p>
+      The original regression used binary sex coding. It does not provide a
+      validated third coefficient, which is why this tool offers a transparent
+      “show both” option rather than inventing one.
+    </p>
+    <h2>Assumptions and limitations</h2>
+    <p>
+      Individual resting expenditure can differ from a population equation. This
+      result does not include activity, growth, pregnancy, medical conditions,
+      medication effects, or the many other factors that may influence energy
+      needs.
+    </p>
+    <p>
+      Source: <a href={CITATIONS.mifflinPaper.url}
+        >{CITATIONS.mifflinPaper.title}</a
+      >, {CITATIONS.mifflinPaper.publisher}. Reviewed for this page {
+        CITATIONS.mifflinPaper.reviewedOn
+      }.
+    </p>
+    <FaqList items={faqs} />
+  </section>
+</BaseLayout>

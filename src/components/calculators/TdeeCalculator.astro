@@ -1,0 +1,310 @@
+---
+import { ACTIVITY_LEVELS } from '../../lib/calculators';
+import CalculatorPanel from './CalculatorPanel.astro';
+import MeasurementFields from './MeasurementFields.astro';
+---
+
+<CalculatorPanel
+  title="Estimate total daily energy expenditure"
+  description="This combines a Mifflin–St Jeor resting estimate with a subjective activity factor. Real energy needs vary."
+  formId="tdee"
+>
+  <form id="tdee-form" novalidate>
+    <div
+      class="error-summary"
+      data-error-summary
+      role="alert"
+      tabindex="-1"
+      hidden
+    >
+      <h3>Check these fields</h3><ul></ul>
+    </div>
+    <MeasurementFields prefix="tdee" />
+    <div class="form-grid">
+      <div class="field">
+        <label for="tdee-age">Age in years</label>
+        <input
+          id="tdee-age"
+          name="age"
+          type="number"
+          inputmode="numeric"
+          min="20"
+          max="120"
+          step="1"
+          autocomplete="off"
+        />
+        <p
+          class="field-error error-text"
+          id="tdee-age-error"
+          data-error-for="age"
+        >
+        </p>
+      </div>
+      <div class="field">
+        <label for="tdee-equation">Mifflin–St Jeor equation</label>
+        <select id="tdee-equation" name="equation">
+          <option value="male">Male equation</option>
+          <option value="female">Female equation</option>
+        </select>
+        <p class="field-error error-text" data-error-for="equation"></p>
+      </div>
+      <div class="field wide-field">
+        <label for="tdee-activity">Activity level</label>
+        <select id="tdee-activity" name="activityLevel">
+          {
+            ACTIVITY_LEVELS.map((level) => (
+              <option value={level.id}>
+                {level.label} — factor {level.factor}
+              </option>
+            ))
+          }
+        </select>
+        <p id="activity-description" class="muted">
+          Choose the description that most closely fits a typical period,
+          knowing that categories are rough heuristics.
+        </p>
+        <p class="field-error error-text" data-error-for="activityLevel"></p>
+      </div>
+    </div>
+    <p class="callout">
+      The equation requires a sex coefficient. It is not a complete statement of
+      gender identity and does not offer a validated coefficient outside the
+      published binary model.
+    </p>
+    <div class="button-row no-print">
+      <button class="button" type="submit">Estimate TDEE</button>
+      <button class="button button-secondary" type="reset">Reset</button>
+    </div>
+  </form>
+  <section
+    id="tdee-result"
+    class="result card card-pad"
+    aria-live="polite"
+    tabindex="-1"
+    hidden
+  >
+    <p class="eyebrow">Selected-factor estimate</p>
+    <h3><span data-tdee-value></span> kcal/day</h3>
+    <p>Formula used: <strong data-tdee-formula></strong></p>
+    <p>
+      Activity uncertainty range: <strong
+        ><span data-range-low></span>–<span data-range-high></span> kcal/day</strong
+      >, using the neighboring activity factors where available.
+    </p>
+    <details>
+      <summary>Show arithmetic planning comparison</summary>
+      <dl>
+        <div><dt>Minus 10%</dt><dd data-minus></dd></div>
+        <div><dt>Maintenance arithmetic</dt><dd data-maintenance></dd></div>
+        <div><dt>Plus 10%</dt><dd data-plus></dd></div>
+      </dl>
+      <p class="muted">
+        These are arithmetic scenarios, not dietary recommendations or predicted
+        weight-change outcomes.
+      </p>
+    </details>
+    <p class="muted">
+      This is an estimate. Health conditions, pregnancy, eating-disorder
+      concerns, medication, and other factors warrant guidance from a qualified
+      clinician or dietitian.
+    </p>
+    <div class="button-row no-print">
+      <button class="button button-secondary" type="button" data-copy-result
+        >Copy result summary</button
+      >
+      <button class="button button-secondary" type="button" data-print
+        >Print</button
+      >
+    </div>
+    <p class="status" data-copy-status role="status" hidden></p>
+  </section>
+</CalculatorPanel>
+
+<script>
+  import {
+    ACTIVITY_LEVELS,
+    calculateBmr,
+    calculateTdee,
+    CalculatorValidationError,
+    roundForDisplay,
+    type ActivityLevel,
+    type BmrInput,
+  } from '../../lib/calculators';
+  import {
+    clearCalculatorErrors,
+    formNumber,
+    initializeUnitControls,
+    readBodyMeasurements,
+    rememberUnits,
+    setUnitPanels,
+    showCalculatorErrors,
+  } from '../../scripts/calculator-ui';
+
+  const form = document.querySelector<HTMLFormElement>('#tdee-form');
+  const result = document.querySelector<HTMLElement>('#tdee-result');
+  if (form && result) {
+    initializeUnitControls(form);
+    const activity = form.elements.namedItem(
+      'activityLevel',
+    ) as HTMLSelectElement;
+    const description = form.querySelector<HTMLElement>(
+      '#activity-description',
+    );
+    const updateActivityDescription = () => {
+      const level = ACTIVITY_LEVELS.find((item) => item.id === activity.value);
+      if (description && level)
+        description.textContent = `${level.description} Categories are subjective heuristics.`;
+    };
+    activity.addEventListener('change', updateActivityDescription);
+    updateActivityDescription();
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      clearCalculatorErrors(form);
+      result.hidden = true;
+      const data = new FormData(form);
+      const measurements = readBodyMeasurements(data);
+      const equation = data.get('equation') === 'female' ? 'female' : 'male';
+      const bmrInput = {
+        ...measurements,
+        age: formNumber(data, 'age'),
+        equation,
+      } as BmrInput;
+      try {
+        const bmr = calculateBmr(bmrInput);
+        if (bmr.selectedEstimate === null)
+          throw new Error('A single BMR equation is required.');
+        const tdee = calculateTdee({
+          bmr: bmr.selectedEstimate,
+          activityLevel: String(data.get('activityLevel')) as ActivityLevel,
+        });
+        const display = (value: number) =>
+          roundForDisplay(value).toLocaleString();
+        const set = (selector: string, value: string) => {
+          const node = result.querySelector<HTMLElement>(selector);
+          if (node) node.textContent = value;
+        };
+        set('[data-tdee-value]', display(tdee.estimate));
+        set(
+          '[data-tdee-formula]',
+          `${display(tdee.bmr)} kcal/day BMR × ${tdee.factor}`,
+        );
+        set('[data-range-low]', display(tdee.uncertaintyRange.lower.value));
+        set('[data-range-high]', display(tdee.uncertaintyRange.upper.value));
+        set(
+          '[data-minus]',
+          `${display(tdee.arithmeticScenarios.minusTenPercent)} kcal/day`,
+        );
+        set(
+          '[data-maintenance]',
+          `${display(tdee.arithmeticScenarios.maintenance)} kcal/day`,
+        );
+        set(
+          '[data-plus]',
+          `${display(tdee.arithmeticScenarios.plusTenPercent)} kcal/day`,
+        );
+        result.dataset.copyText = `Estimated TDEE: ${display(tdee.estimate)} kcal/day. Formula: estimated BMR ${display(tdee.bmr)} × activity factor ${tdee.factor}. Activity uncertainty range: ${display(tdee.uncertaintyRange.lower.value)} to ${display(tdee.uncertaintyRange.upper.value)} kcal/day. This is an estimate, not dietary advice.`;
+        rememberUnits(data);
+        result.hidden = false;
+        result.focus();
+      } catch (error) {
+        showCalculatorErrors(
+          form,
+          error instanceof CalculatorValidationError
+            ? error.issues
+            : [
+                {
+                  path: '',
+                  message:
+                    'We could not calculate this estimate. Check your entries.',
+                },
+              ],
+        );
+      }
+    });
+
+    form.addEventListener('reset', () =>
+      queueMicrotask(() => {
+        clearCalculatorErrors(form);
+        setUnitPanels(form, 'metric');
+        result.hidden = true;
+        updateActivityDescription();
+      }),
+    );
+    result
+      .querySelector('[data-print]')
+      ?.addEventListener('click', () => window.print());
+    result
+      .querySelector('[data-copy-result]')
+      ?.addEventListener('click', async () => {
+        const status = result.querySelector<HTMLElement>('[data-copy-status]');
+        try {
+          await navigator.clipboard.writeText(result.dataset.copyText ?? '');
+          if (status)
+            status.textContent =
+              'Result summary copied without your measurements.';
+        } catch {
+          if (status)
+            status.textContent =
+              'Copy is unavailable. Select the result text manually.';
+        }
+        if (status) status.hidden = false;
+      });
+  }
+</script>
+
+<style>
+  .error-summary {
+    margin-bottom: 1rem;
+    border: 2px solid var(--color-danger);
+    border-radius: 0.8rem;
+    padding: 1rem;
+  }
+  .field-error {
+    min-height: 1.3em;
+    margin: 0;
+    font-size: 0.88rem;
+  }
+  .form-grid {
+    display: grid;
+    gap: 1rem;
+    margin-block: 1.2rem;
+  }
+  .result {
+    margin-top: 1.5rem;
+    box-shadow: none;
+  }
+  .result h3 {
+    font-size: clamp(1.8rem, 5vw, 3.2rem);
+  }
+  details {
+    margin-block: 1rem;
+  }
+  summary {
+    min-height: 2.75rem;
+    font-weight: 750;
+    cursor: pointer;
+  }
+  dl {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+    gap: 0.65rem;
+  }
+  dl div {
+    border-radius: 0.7rem;
+    padding: 0.85rem;
+    background: var(--color-surface-muted);
+  }
+  dd {
+    margin: 0.25rem 0 0;
+    font-weight: 800;
+  }
+  @media (min-width: 36rem) {
+    .form-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+    .wide-field {
+      grid-column: 1 / -1;
+    }
+  }
+</style>

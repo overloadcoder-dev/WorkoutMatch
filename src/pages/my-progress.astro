@@ -1,0 +1,47 @@
+---
+import Breadcrumbs from '../components/layout/Breadcrumbs.astro';
+import ProgressDashboard from '../components/progress/ProgressDashboard.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="My local workout progress"
+  description="Review completed workouts and saved plans stored only in this browser, or export, import, and clear your local WorkoutMatch data."
+  path="/my-progress/"
+  noindex
+>
+  <div class="container">
+    <Breadcrumbs
+      items={[{ label: 'Home', href: '/' }, { label: 'My progress' }]}
+    />
+  </div>
+  <header class="section-sm narrow">
+    <p class="eyebrow">No account required</p>
+    <h1>My local progress</h1>
+    <p class="lede">
+      Completed workouts and saved plans live in this browser profile—not in a
+      WorkoutMatch account or cloud backup.
+    </p>
+    <div class="callout">
+      <strong>Shared-browser note:</strong> another person using this browser profile
+      may be able to see this data. Export a backup before clearing site data or moving
+      devices.
+    </div>
+  </header>
+  <div class="container section-sm"><ProgressDashboard /></div>
+  <section class="narrow section-sm prose">
+    <h2>What is stored</h2>
+    <p>
+      WorkoutMatch can store saved plans, completed or skipped movements, set
+      details you enter, optional weights, timestamps, and small preferences.
+      Versioned IndexedDB stores workout records; localStorage is limited to
+      small explicit preferences and a recoverable active-session state.
+    </p>
+    <p>
+      No body-weight history is included. Calculator measurements and results
+      are never added to progress. Read the <a href="/privacy/"
+        >privacy explanation</a
+      > for the complete boundary.
+    </p>
+  </section>
+</BaseLayout>

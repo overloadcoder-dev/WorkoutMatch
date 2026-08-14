@@ -1,0 +1,18 @@
+---
+import { SITE_CONFIG } from '../../config/site';
+
+type Props = { placement: string };
+const { placement } = Astro.props;
+---
+
+{
+  SITE_CONFIG.ads.enabled && (
+    <aside
+      class="ad-slot"
+      aria-label="Advertisement"
+      data-placement={placement}
+    >
+      <p>Advertisement</p>
+    </aside>
+  )
+}

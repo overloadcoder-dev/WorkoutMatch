@@ -1,0 +1,105 @@
+---
+import { SITE_CONFIG } from '../../config/site';
+
+const year = new Date().getUTCFullYear();
+---
+
+<footer class="site-footer no-print">
+  <div class="container footer-grid">
+    <div>
+      <a class="footer-brand" href="/">{SITE_CONFIG.name}</a>
+      <p>
+        Practical workouts matched to the time, space, and equipment you have.
+      </p>
+      <p class="fine-print">
+        Educational information for adults. Not medical advice.
+      </p>
+    </div>
+    <nav aria-label="Product">
+      <h2>Use WorkoutMatch</h2>
+      <ul>
+        <li><a href="/generate/">Build a workout</a></li>
+        <li><a href="/quick-workout/">Quick workout</a></li>
+        <li><a href="/exercises/">Exercise library</a></li>
+        <li><a href="/timers/interval/">Interval timer</a></li>
+      </ul>
+    </nav>
+    <nav aria-label="Information">
+      <h2>Information</h2>
+      <ul>
+        <li><a href="/methodology/">Methodology</a></li>
+        <li><a href="/safety/">Safety</a></li>
+        <li><a href="/privacy/">Privacy</a></li>
+        <li><a href="/terms/">Terms</a></li>
+        <li><a href="/about/">About</a></li>
+      </ul>
+    </nav>
+  </div>
+  <div class="container legal-row">
+    <span>&copy; {year} {SITE_CONFIG.name}</span>
+    <span
+      >Working product name; no trademark or domain clearance is implied.</span
+    >
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    margin-top: 4rem;
+    border-top: 1px solid var(--color-border);
+    padding-block: 3rem 1.5rem;
+    background: var(--color-surface);
+  }
+
+  .footer-grid {
+    display: grid;
+    gap: 2rem;
+  }
+
+  .footer-grid > div {
+    max-width: 28rem;
+  }
+
+  .footer-brand {
+    color: var(--color-ink);
+    font-size: 1.3rem;
+    font-weight: 850;
+    text-decoration: none;
+  }
+
+  h2 {
+    margin: 0 0 0.75rem;
+    font-size: 1rem;
+    letter-spacing: 0;
+  }
+
+  ul {
+    display: grid;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .fine-print,
+  .legal-row {
+    color: var(--color-ink-muted);
+    font-size: 0.88rem;
+  }
+
+  .legal-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-top: 2.5rem;
+    border-top: 1px solid var(--color-border);
+    padding-top: 1.2rem;
+  }
+
+  @media (min-width: 48rem) {
+    .footer-grid {
+      grid-template-columns: 2fr 1fr 1fr;
+    }
+  }
+</style>

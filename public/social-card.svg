@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">WorkoutMatch</title>
+  <desc id="desc">Choose what you have. Get a balanced workout you can start now.</desc>
+  <rect width="1200" height="630" fill="#f6f2e9"/>
+  <circle cx="1030" cy="80" r="250" fill="#d9efe9"/>
+  <path d="M90 150h140v50H90zm20 55h100v220H110z" fill="#087f6b"/>
+  <path d="M210 265h190v100H210z" fill="#d96c3d"/>
+  <text x="450" y="285" fill="#202522" font-family="system-ui,sans-serif" font-size="86" font-weight="750">WorkoutMatch</text>
+  <text x="450" y="365" fill="#5b625e" font-family="system-ui,sans-serif" font-size="34">Your time. Your space. Your equipment.</text>
+</svg>

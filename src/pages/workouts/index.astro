@@ -1,0 +1,206 @@
+---
+import AdSlot from '../../components/layout/AdSlot.astro';
+import Breadcrumbs from '../../components/layout/Breadcrumbs.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { curatedWorkouts } from '../../data/curated-workouts';
+---
+
+<BaseLayout
+  title="Curated Home Workouts by Equipment, Time, and Space"
+  description="Browse eight substantial home workouts for no equipment, dumbbells, bands, quiet apartments, no jumping, standing-only training, and 15-minute sessions."
+  path="/workouts/"
+>
+  <div class="container">
+    <Breadcrumbs
+      items={[{ label: 'Home', href: '/' }, { label: 'Workouts' }]}
+    />
+  </div>
+
+  <header class="container section-sm directory-hero">
+    <div>
+      <p class="eyebrow">Curated workouts</p>
+      <h1>Pick a practical starting session</h1>
+      <p class="lede">
+        These eight complete examples are written for common equipment, space,
+        noise, impact, and time constraints. Each includes an honest session,
+        substitutions, pacing notes, and limitations.
+      </p>
+    </div>
+    <aside class="card card-pad">
+      <h2>Need an exact match?</h2>
+      <p class="muted">
+        A curated page cannot combine every preference. The builder checks your
+        selected equipment, space, experience, movement choices, and time
+        together.
+      </p>
+      <div class="button-row">
+        <a class="button" href="/generate/">Build my workout</a>
+        <a class="button button-secondary" href="/quick-workout/">Quick match</a
+        >
+      </div>
+    </aside>
+  </header>
+
+  <section class="container section-sm" aria-labelledby="all-workouts-heading">
+    <h2 id="all-workouts-heading">All curated sessions</h2>
+    <div class="workout-grid">
+      {
+        curatedWorkouts.map((workout) => (
+          <article class="card workout-card">
+            <div class="card-pad">
+              <p class="eyebrow">{workout.eyebrow}</p>
+              <h3>
+                <a href={`/workouts/${workout.slug}/`}>{workout.title}</a>
+              </h3>
+              <p class="muted">{workout.summary}</p>
+              <dl>
+                <div>
+                  <>
+                    <dt>Time</dt>
+                    <dd>{workout.duration}</dd>
+                  </>
+                </div>
+                <div>
+                  <>
+                    <dt>Equipment</dt>
+                    <dd>{workout.equipment}</dd>
+                  </>
+                </div>
+                <div>
+                  <>
+                    <dt>Space</dt>
+                    <dd>{workout.space}</dd>
+                  </>
+                </div>
+              </dl>
+            </div>
+            <a class="card-link" href={`/workouts/${workout.slug}/`}>
+              Read the complete session <span aria-hidden="true">→</span>
+            </a>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  <AdSlot placement="workout-directory-editorial" />
+
+  <section
+    class="container section-sm choose-guide"
+    aria-labelledby="choose-heading"
+  >
+    <div class="prose">
+      <h2 id="choose-heading">How to choose a page</h2>
+      <p>
+        Start with the constraint that would otherwise stop the session:
+        available equipment, staying quiet, avoiding jumps, staying upright, or
+        a strict time limit. Then read the setup and limitations before
+        beginning. The <a href="/exercises/">exercise library</a> has detailed movement
+        instructions, while the <a href="/safety/">safety page</a> explains when a
+        general workout is not enough.
+      </p>
+      <p>
+        The examples are not ranked and they do not promise a particular health
+        outcome. They are sensible templates you can scale by changing range,
+        repetitions, rest, or rounds while keeping the defining constraint
+        intact.
+      </p>
+    </div>
+    <div class="callout">
+      <h3>Curated page or generator?</h3>
+      <p>
+        Use a page when one scenario closely fits. Use the <a href="/generate/"
+          >full generator</a
+        > when several constraints must work together, or the <a
+          href="/quick-workout/">quick generator</a
+        > when duration, equipment, focus, and quiet/no-jumping are enough.
+      </p>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .directory-hero,
+  .choose-guide {
+    display: grid;
+    gap: clamp(1.5rem, 4vw, 3rem);
+    align-items: start;
+  }
+
+  .directory-hero aside h2,
+  .choose-guide h3 {
+    font-size: 1.5rem;
+  }
+
+  .directory-hero aside h2,
+  .choose-guide h3,
+  .choose-guide p:last-child {
+    margin-top: 0;
+  }
+
+  .workout-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 21rem), 1fr));
+    gap: 1rem;
+  }
+
+  .workout-card {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .workout-card .card-pad {
+    flex: 1;
+  }
+
+  .workout-card h3 a {
+    color: var(--color-ink);
+  }
+
+  dl {
+    display: grid;
+    gap: 0.65rem;
+    margin: 1.2rem 0 0;
+  }
+
+  dl div {
+    display: grid;
+    grid-template-columns: 5.5rem 1fr;
+    gap: 0.75rem;
+    border-top: 1px solid var(--color-border);
+    padding-top: 0.55rem;
+  }
+
+  dt {
+    color: var(--color-ink-muted);
+    font-size: 0.8rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  dd {
+    margin: 0;
+  }
+
+  .card-link {
+    display: flex;
+    min-height: 3.25rem;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    border-top: 1px solid var(--color-border);
+    padding: 0.75rem 1.25rem;
+    background: var(--color-primary-soft);
+    font-weight: 780;
+    text-decoration: none;
+  }
+
+  @media (min-width: 52rem) {
+    .directory-hero,
+    .choose-guide {
+      grid-template-columns: minmax(0, 1.35fr) minmax(19rem, 0.65fr);
+    }
+  }
+</style>

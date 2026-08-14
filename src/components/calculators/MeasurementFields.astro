@@ -1,0 +1,158 @@
+---
+type Props = { prefix: string };
+const { prefix } = Astro.props;
+---
+
+<fieldset class="stack unit-fields">
+  <legend>Units</legend>
+  <div class="choice-grid units-grid">
+    <label class="choice">
+      <input type="radio" name="unitSystem" value="metric" checked />
+      Metric (kg, cm)
+    </label>
+    <label class="choice">
+      <input type="radio" name="unitSystem" value="imperial" />
+      Imperial (lb, ft/in)
+    </label>
+  </div>
+</fieldset>
+
+<div data-unit-panel="metric" class="measurement-grid">
+  <div class="field">
+    <label for={`${prefix}-weight-kg`}>Weight in kilograms</label>
+    <input
+      id={`${prefix}-weight-kg`}
+      name="weightKg"
+      type="number"
+      inputmode="decimal"
+      min="25"
+      max="350"
+      step="0.1"
+      autocomplete="off"
+    />
+    <p
+      class="field-error error-text"
+      id={`${prefix}-weight-kg-error`}
+      data-error-for="weightKg"
+    >
+    </p>
+  </div>
+  <div class="field">
+    <label for={`${prefix}-height-cm`}>Height in centimetres</label>
+    <input
+      id={`${prefix}-height-cm`}
+      name="heightCm"
+      type="number"
+      inputmode="decimal"
+      min="100"
+      max="250"
+      step="0.1"
+      autocomplete="off"
+    />
+    <p
+      class="field-error error-text"
+      id={`${prefix}-height-cm-error`}
+      data-error-for="heightCm"
+    >
+    </p>
+  </div>
+</div>
+
+<div data-unit-panel="imperial" class="measurement-grid" hidden>
+  <div class="field">
+    <label for={`${prefix}-weight-lb`}>Weight in pounds</label>
+    <input
+      id={`${prefix}-weight-lb`}
+      name="weightLb"
+      type="number"
+      inputmode="decimal"
+      min="55.1"
+      max="771.6"
+      step="0.1"
+      autocomplete="off"
+      disabled
+    />
+    <p
+      class="field-error error-text"
+      id={`${prefix}-weight-lb-error`}
+      data-error-for="weightLb"
+    >
+    </p>
+  </div>
+  <div class="field">
+    <label for={`${prefix}-height-ft`}>Height: feet</label>
+    <input
+      id={`${prefix}-height-ft`}
+      name="heightFeet"
+      type="number"
+      inputmode="numeric"
+      min="0"
+      max="9"
+      step="1"
+      autocomplete="off"
+      disabled
+    />
+    <p
+      class="field-error error-text"
+      id={`${prefix}-height-ft-error`}
+      data-error-for="heightFeet"
+    >
+    </p>
+  </div>
+  <div class="field">
+    <label for={`${prefix}-height-in`}>Additional inches</label>
+    <input
+      id={`${prefix}-height-in`}
+      name="heightInches"
+      type="number"
+      inputmode="decimal"
+      min="0"
+      max="11.9"
+      step="0.1"
+      autocomplete="off"
+      disabled
+    />
+    <p
+      class="field-error error-text"
+      id={`${prefix}-height-in-error`}
+      data-error-for="heightInches"
+    >
+    </p>
+  </div>
+</div>
+
+<label class="remember-units">
+  <input type="checkbox" name="rememberUnits" />
+  Remember only my unit preference on this device
+</label>
+
+<style>
+  .measurement-grid {
+    display: grid;
+    gap: 1rem;
+    margin-block: 1rem;
+  }
+
+  .field-error {
+    min-height: 1.3em;
+    margin: 0;
+    font-size: 0.88rem;
+  }
+
+  .remember-units {
+    display: flex;
+    min-height: 2.75rem;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  @media (min-width: 34rem) {
+    .measurement-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    [data-unit-panel='metric'] {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+</style>

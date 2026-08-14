@@ -1,0 +1,42 @@
+---
+type Faq = { question: string; answer: string };
+type Props = { items: Faq[]; heading?: string };
+const { items, heading = 'Common questions' } = Astro.props;
+---
+
+<section class="faq-section" aria-labelledby="faq-heading">
+  <h2 id="faq-heading">{heading}</h2>
+  <div class="faq-list">
+    {
+      items.map((item) => (
+        <details class="card">
+          <summary>{item.question}</summary>
+          <p>{item.answer}</p>
+        </details>
+      ))
+    }
+  </div>
+</section>
+
+<style>
+  .faq-list {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  details {
+    padding: 0 1.1rem;
+  }
+
+  summary {
+    min-height: 3.2rem;
+    padding-block: 0.85rem;
+    font-weight: 780;
+    cursor: pointer;
+  }
+
+  p {
+    margin-top: 0;
+    color: var(--color-ink-muted);
+  }
+</style>

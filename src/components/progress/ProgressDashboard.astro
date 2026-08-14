@@ -1,0 +1,554 @@
+<section class="progress-shell" aria-labelledby="progress-heading">
+  <div id="storage-status" class="status" role="status">
+    Opening local workout data…
+  </div>
+
+  <div id="progress-dashboard" hidden>
+    <div class="summary-grid" aria-labelledby="progress-heading">
+      <article class="card card-pad">
+        <p class="eyebrow">Past 7 days</p>
+        <h2 id="progress-heading"><span data-week-count>0</span> completed</h2>
+        <p class="muted">
+          Counted from workouts saved on this browser profile.
+        </p>
+      </article>
+      <article class="card card-pad">
+        <p class="eyebrow">Current daily streak</p>
+        <h2><span data-streak>0</span> days</h2>
+        <p class="muted">
+          Consecutive local calendar days ending today or yesterday.
+        </p>
+      </article>
+      <article class="card card-pad">
+        <p class="eyebrow">Saved for later</p>
+        <h2><span data-plan-count>0</span> plans</h2>
+        <p class="muted">
+          Plans stay only in this browser unless you export them.
+        </p>
+      </article>
+    </div>
+
+    <section class="section-sm" aria-labelledby="saved-plans-heading">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Start again</p>
+          <h2 id="saved-plans-heading">Saved workouts</h2>
+        </div>
+        <a class="button button-secondary" href="/generate/">Build another</a>
+      </div>
+      <p id="plans-empty" class="status">
+        No saved workouts yet. Build a workout and choose Save locally.
+      </p>
+      <ul id="saved-plans-list" class="record-list" aria-label="Saved workouts">
+      </ul>
+    </section>
+
+    <section class="section-sm" aria-labelledby="history-heading">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">On this device</p>
+          <h2 id="history-heading">Workout history</h2>
+        </div>
+      </div>
+      <p id="history-empty" class="status">
+        No completed workouts are stored yet.
+      </p>
+      <ol id="history-list" class="record-list"></ol>
+    </section>
+
+    <section
+      class="card card-pad data-tools"
+      aria-labelledby="data-tools-heading"
+    >
+      <p class="eyebrow">Your local data</p>
+      <h2 id="data-tools-heading">Back up or remove it</h2>
+      <p>
+        Export a JSON backup before clearing browser data or moving devices.
+        WorkoutMatch does not back this up automatically.
+      </p>
+      <div class="button-row">
+        <button class="button button-secondary" type="button" id="export-data"
+          >Export JSON</button
+        >
+        <label class="button button-secondary file-button" for="import-file"
+          >Choose JSON to import</label
+        >
+        <input
+          class="visually-hidden"
+          id="import-file"
+          type="file"
+          accept="application/json,.json"
+        />
+        <button class="button danger-button" type="button" id="clear-data"
+          >Clear all data</button
+        >
+      </div>
+      <p id="data-action-status" class="status" role="status" hidden></p>
+    </section>
+  </div>
+</section>
+
+<dialog
+  id="import-dialog"
+  aria-labelledby="import-dialog-title"
+  aria-describedby="import-dialog-description"
+>
+  <form method="dialog" class="dialog-card">
+    <h2 id="import-dialog-title">Review this import</h2>
+    <p id="import-dialog-description">Nothing changes until you confirm.</p>
+    <dl class="import-counts">
+      <div><dt>Incoming workouts</dt><dd data-import-workouts>0</dd></div>
+      <div><dt>Incoming saved plans</dt><dd data-import-plans>0</dd></div>
+      <div><dt>Conflicting records</dt><dd data-import-conflicts>0</dd></div>
+    </dl>
+    <fieldset class="stack">
+      <legend>How should these records be applied?</legend>
+      <label class="choice"
+        ><input type="radio" name="importMode" value="merge" checked /> Merge; incoming
+        records replace only matching IDs</label
+      >
+      <label class="choice"
+        ><input type="radio" name="importMode" value="replace" /> Replace all existing
+        local WorkoutMatch data</label
+      >
+    </fieldset>
+    <label class="choice replace-confirm" hidden>
+      <input type="checkbox" name="replaceConfirmed" /> I understand this replaces
+      all current local WorkoutMatch data
+    </label>
+    <p class="error-text" data-import-error role="alert"></p>
+    <div class="button-row">
+      <button class="button" type="button" data-confirm-import
+        >Import data</button
+      >
+      <button class="button button-secondary" value="cancel">Cancel</button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+  import {
+    clearWorkoutMatchLocalStorage,
+    createExportDownload,
+    MAX_IMPORT_BYTES,
+    openWorkoutMatchStorage,
+    type LocalDataImportPreview,
+    type LocalDataSnapshot,
+    type WorkoutMatchStorage,
+  } from '../../lib/storage';
+
+  const storageStatus = document.querySelector<HTMLElement>('#storage-status');
+  const dashboard = document.querySelector<HTMLElement>('#progress-dashboard');
+  const actionStatus = document.querySelector<HTMLElement>(
+    '#data-action-status',
+  );
+  const importInput = document.querySelector<HTMLInputElement>('#import-file');
+  const importDialog =
+    document.querySelector<HTMLDialogElement>('#import-dialog');
+  let storage: WorkoutMatchStorage | null = null;
+  let snapshot: LocalDataSnapshot | null = null;
+  let pendingPreview: LocalDataImportPreview | null = null;
+
+  const showActionStatus = (message: string) => {
+    if (!actionStatus) return;
+    actionStatus.textContent = message;
+    actionStatus.hidden = false;
+  };
+
+  const localDateKey = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  const dayStreak = (dates: readonly string[]) => {
+    const completedDays = new Set(
+      dates.map((value) => localDateKey(new Date(value))),
+    );
+    const cursor = new Date();
+    cursor.setHours(12, 0, 0, 0);
+    if (!completedDays.has(localDateKey(cursor)))
+      cursor.setDate(cursor.getDate() - 1);
+    let streak = 0;
+    while (completedDays.has(localDateKey(cursor))) {
+      streak += 1;
+      cursor.setDate(cursor.getDate() - 1);
+    }
+    return streak;
+  };
+
+  const appendMeta = (parent: HTMLElement, values: string[]) => {
+    const list = document.createElement('ul');
+    list.className = 'tag-list';
+    for (const value of values) {
+      const item = document.createElement('li');
+      item.className = 'tag';
+      item.textContent = value;
+      list.append(item);
+    }
+    parent.append(list);
+  };
+
+  const describeSet = (
+    set: LocalDataSnapshot['workouts'][number]['exercises'][number]['sets'][number],
+  ) => {
+    const parts = [`Set ${set.setNumber}`];
+    if (set.reps !== undefined) parts.push(`${set.reps} reps`);
+    if (set.durationSeconds !== undefined)
+      parts.push(`${set.durationSeconds} seconds`);
+    if (set.weight) parts.push(`${set.weight.value} ${set.weight.unit}`);
+    return parts.join(' · ');
+  };
+
+  const renderSnapshot = (data: LocalDataSnapshot) => {
+    snapshot = data;
+    const now = Date.now();
+    const sevenDaysAgo = now - 7 * 24 * 60 * 60 * 1000;
+    const completed = data.workouts.filter(
+      (item) => item.status === 'completed',
+    );
+    const weekCount = completed.filter(
+      (item) => Date.parse(item.completedAt) >= sevenDaysAgo,
+    ).length;
+    const setText = (selector: string, value: string) => {
+      const node = document.querySelector<HTMLElement>(selector);
+      if (node) node.textContent = value;
+    };
+    setText('[data-week-count]', String(weekCount));
+    setText(
+      '[data-streak]',
+      String(dayStreak(completed.map((item) => item.completedAt))),
+    );
+    setText('[data-plan-count]', String(data.savedPlans.length));
+
+    const planList =
+      document.querySelector<HTMLUListElement>('#saved-plans-list');
+    const planEmpty = document.querySelector<HTMLElement>('#plans-empty');
+    planList?.replaceChildren();
+    if (planEmpty) planEmpty.hidden = data.savedPlans.length > 0;
+    for (const plan of [...data.savedPlans].sort((a, b) =>
+      b.updatedAt.localeCompare(a.updatedAt),
+    )) {
+      const item = document.createElement('li');
+      item.className = 'card card-pad record';
+      const title = document.createElement('h3');
+      title.textContent = plan.title;
+      const copy = document.createElement('p');
+      copy.className = 'muted';
+      copy.textContent = `${plan.durationMinutes} minutes · ${plan.exercises.length} movements · saved ${new Date(plan.updatedAt).toLocaleDateString()}`;
+      item.append(title, copy);
+      appendMeta(
+        item,
+        plan.equipment.length > 0 ? plan.equipment : ['No equipment'],
+      );
+      planList?.append(item);
+    }
+
+    const historyList =
+      document.querySelector<HTMLOListElement>('#history-list');
+    const historyEmpty = document.querySelector<HTMLElement>('#history-empty');
+    historyList?.replaceChildren();
+    if (historyEmpty) historyEmpty.hidden = data.workouts.length > 0;
+    for (const workout of [...data.workouts].sort((a, b) =>
+      b.completedAt.localeCompare(a.completedAt),
+    )) {
+      const item = document.createElement('li');
+      item.className = 'card card-pad record';
+      const title = document.createElement('h3');
+      title.textContent = workout.title;
+      const copy = document.createElement('p');
+      copy.className = 'muted';
+      const completedCount = workout.exercises.filter(
+        (exercise) => exercise.status === 'completed',
+      ).length;
+      copy.textContent = `${new Date(workout.completedAt).toLocaleString()} · ${Math.round(workout.durationSeconds / 60)} minutes · ${completedCount}/${workout.exercises.length} movements completed`;
+      item.append(title, copy);
+      appendMeta(item, [
+        workout.status === 'completed' ? 'Completed' : 'Ended early',
+      ]);
+      const details = document.createElement('details');
+      const summary = document.createElement('summary');
+      summary.textContent = 'Exercise details';
+      const exerciseList = document.createElement('ul');
+      exerciseList.className = 'exercise-log';
+      for (const exercise of workout.exercises) {
+        const exerciseItem = document.createElement('li');
+        const exerciseName = document.createElement('strong');
+        exerciseName.textContent = exercise.name;
+        const exerciseStatus = document.createElement('span');
+        exerciseStatus.className = 'muted';
+        exerciseStatus.textContent =
+          exercise.status === 'completed' ? 'Completed' : 'Skipped';
+        exerciseItem.append(exerciseName, exerciseStatus);
+        if (exercise.sets.length > 0) {
+          const setList = document.createElement('ul');
+          for (const set of exercise.sets) {
+            const setItem = document.createElement('li');
+            setItem.textContent = describeSet(set);
+            setList.append(setItem);
+          }
+          exerciseItem.append(setList);
+        }
+        exerciseList.append(exerciseItem);
+      }
+      details.append(summary, exerciseList);
+      item.append(details);
+      historyList?.append(item);
+    }
+  };
+
+  const load = async () => {
+    try {
+      storage = await openWorkoutMatchStorage();
+      const data = await storage.getSnapshot();
+      renderSnapshot(data);
+      if (storageStatus) storageStatus.hidden = true;
+      if (dashboard) dashboard.hidden = false;
+    } catch (error) {
+      if (storageStatus) {
+        storageStatus.textContent =
+          error instanceof Error
+            ? error.message
+            : 'Local browser storage is unavailable. You can still generate and run workouts without saving.';
+      }
+    }
+  };
+
+  document.querySelector('#export-data')?.addEventListener('click', () => {
+    if (!snapshot) return;
+    try {
+      const download = createExportDownload(snapshot);
+      const anchor = document.createElement('a');
+      anchor.href = download.url;
+      anchor.download = download.filename;
+      anchor.click();
+      setTimeout(() => download.revoke(), 0);
+      showActionStatus(
+        'JSON backup prepared. Keep the downloaded file somewhere you trust.',
+      );
+    } catch (error) {
+      showActionStatus(
+        error instanceof Error ? error.message : 'Export failed.',
+      );
+    }
+  });
+
+  importInput?.addEventListener('change', async () => {
+    const file = importInput.files?.[0];
+    if (!file || !storage || !importDialog) return;
+    if (file.size > MAX_IMPORT_BYTES) {
+      showActionStatus('Import rejected: the file exceeds the 1 MB limit.');
+      importInput.value = '';
+      return;
+    }
+    try {
+      pendingPreview = await storage.previewImport(await file.text());
+      const setText = (selector: string, value: number) => {
+        const node = importDialog.querySelector<HTMLElement>(selector);
+        if (node) node.textContent = String(value);
+      };
+      setText('[data-import-workouts]', pendingPreview.incoming.workouts);
+      setText('[data-import-plans]', pendingPreview.incoming.savedPlans);
+      setText(
+        '[data-import-conflicts]',
+        pendingPreview.conflicts.workouts +
+          pendingPreview.conflicts.savedPlans +
+          pendingPreview.conflicts.preferences,
+      );
+      const errorNode = importDialog.querySelector<HTMLElement>(
+        '[data-import-error]',
+      );
+      if (errorNode) errorNode.textContent = '';
+      importDialog.showModal();
+    } catch (error) {
+      showActionStatus(
+        error instanceof Error
+          ? `Import rejected: ${error.message}`
+          : 'Import rejected.',
+      );
+    } finally {
+      importInput.value = '';
+    }
+  });
+
+  importDialog
+    ?.querySelectorAll<HTMLInputElement>('input[name="importMode"]')
+    .forEach((radio) => {
+      radio.addEventListener('change', () => {
+        const confirmation =
+          importDialog.querySelector<HTMLElement>('.replace-confirm');
+        if (confirmation)
+          confirmation.hidden = radio.value !== 'replace' || !radio.checked;
+      });
+    });
+
+  importDialog
+    ?.querySelector('[data-confirm-import]')
+    ?.addEventListener('click', async () => {
+      if (!storage || !pendingPreview || !importDialog) return;
+      const data = new FormData(
+        importDialog.querySelector('form') ?? undefined,
+      );
+      const mode = data.get('importMode') === 'replace' ? 'replace' : 'merge';
+      const errorNode = importDialog.querySelector<HTMLElement>(
+        '[data-import-error]',
+      );
+      if (mode === 'replace' && data.get('replaceConfirmed') !== 'on') {
+        if (errorNode)
+          errorNode.textContent =
+            'Confirm that you understand replacement removes the current local records.';
+        return;
+      }
+      try {
+        const imported = await storage.commitImport(pendingPreview, mode, {
+          replaceConfirmed: mode === 'replace',
+        });
+        renderSnapshot(imported);
+        pendingPreview = null;
+        importDialog.close();
+        showActionStatus(
+          `Import complete. Data was ${mode === 'merge' ? 'merged' : 'replaced'}.`,
+        );
+      } catch (error) {
+        if (errorNode)
+          errorNode.textContent =
+            error instanceof Error ? error.message : 'Import failed.';
+      }
+    });
+
+  document.querySelector('#clear-data')?.addEventListener('click', async () => {
+    if (!storage) return;
+    if (
+      !window.confirm(
+        'Clear all WorkoutMatch workouts, saved plans, and preferences stored in this browser? This cannot be undone unless you exported a backup.',
+      )
+    )
+      return;
+    try {
+      await storage.clearAll({ confirmed: true });
+      const localStorageFailures = clearWorkoutMatchLocalStorage(
+        window.localStorage,
+      );
+      renderSnapshot(await storage.getSnapshot());
+      showActionStatus(
+        localStorageFailures.length === 0
+          ? 'All local WorkoutMatch data has been cleared from this browser.'
+          : 'Workout records were cleared, but this browser blocked removal of some small preferences or active-session data.',
+      );
+    } catch (error) {
+      showActionStatus(
+        error instanceof Error ? error.message : 'Clear-all failed.',
+      );
+    }
+  });
+
+  window.addEventListener('pagehide', () => storage?.close(), { once: true });
+  void load();
+</script>
+
+<style>
+  .progress-shell {
+    min-height: 24rem;
+  }
+  .summary-grid {
+    display: grid;
+    gap: 1rem;
+  }
+  .summary-grid h2 {
+    font-size: clamp(1.8rem, 5vw, 3rem);
+  }
+  .section-heading {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  .record-list {
+    display: grid;
+    gap: 0.75rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .record h3 {
+    font-size: 1.15rem;
+  }
+  .record p {
+    margin-block: 0.3rem 0.75rem;
+  }
+  .record details {
+    margin-top: 0.85rem;
+  }
+  .record summary {
+    cursor: pointer;
+    font-weight: 750;
+  }
+  .exercise-log {
+    display: grid;
+    gap: 0.75rem;
+    margin-block: 0.8rem 0;
+    padding-left: 1.2rem;
+  }
+  .exercise-log > li {
+    display: grid;
+    gap: 0.2rem;
+  }
+  .exercise-log ul {
+    margin: 0.2rem 0 0;
+    padding-left: 1.15rem;
+  }
+  .data-tools {
+    box-shadow: none;
+  }
+  .file-button {
+    cursor: pointer;
+  }
+  .danger-button {
+    background: var(--color-danger);
+  }
+  dialog {
+    width: min(38rem, calc(100% - 2rem));
+    max-height: calc(100svh - 2rem);
+    border: 1px solid var(--color-border);
+    border-radius: 1.25rem;
+    padding: 0;
+    background: var(--color-surface);
+    color: var(--color-ink);
+    box-shadow: var(--shadow-card);
+  }
+  dialog::backdrop {
+    background: rgb(0 0 0 / 0.6);
+  }
+  .dialog-card {
+    display: grid;
+    gap: 1rem;
+    padding: clamp(1rem, 4vw, 2rem);
+  }
+  .import-counts {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+    margin: 0;
+  }
+  .import-counts div {
+    border-radius: 0.75rem;
+    padding: 0.7rem;
+    background: var(--color-surface-muted);
+  }
+  .import-counts dt {
+    color: var(--color-ink-muted);
+    font-size: 0.8rem;
+  }
+  .import-counts dd {
+    margin: 0.2rem 0 0;
+    font-size: 1.5rem;
+    font-weight: 800;
+  }
+  @media (min-width: 48rem) {
+    .summary-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+</style>

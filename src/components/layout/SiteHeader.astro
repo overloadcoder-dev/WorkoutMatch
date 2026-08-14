@@ -1,0 +1,226 @@
+---
+import { SITE_CONFIG } from '../../config/site';
+
+const navItems = [
+  { href: '/generate/', label: 'Build a workout' },
+  { href: '/quick-workout/', label: 'Quick workout' },
+  { href: '/workouts/', label: 'Workouts' },
+  { href: '/exercises/', label: 'Exercises' },
+  { href: '/calculators/', label: 'Calculators' },
+  { href: '/my-progress/', label: 'My progress' },
+];
+---
+
+<header class="site-header no-print">
+  <div class="container header-inner">
+    <a class="brand" href="/" aria-label={`${SITE_CONFIG.name} home`}>
+      <span aria-hidden="true" class="brand-mark">WM</span>
+      <span>{SITE_CONFIG.name}</span>
+    </a>
+    <details class="nav-menu">
+      <summary>Menu</summary>
+      <nav aria-label="Primary">
+        <ul>
+          {
+            navItems.map(({ href, label }) => (
+              <li>
+                <a href={href}>{label}</a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+    </details>
+    <label class="theme-field">
+      <span class="visually-hidden">Theme</span>
+      <select data-theme-select aria-label="Theme">
+        <option value="system">System theme</option>
+        <option value="light">Light theme</option>
+        <option value="dark">Dark theme</option>
+      </select>
+    </label>
+  </div>
+</header>
+
+<script>
+  const themeSelect = document.querySelector<HTMLSelectElement>(
+    '[data-theme-select]',
+  );
+
+  if (themeSelect) {
+    try {
+      const saved = localStorage.getItem('wm-theme');
+      themeSelect.value =
+        saved === 'light' || saved === 'dark' ? saved : 'system';
+    } catch {
+      themeSelect.value = 'system';
+    }
+
+    themeSelect.addEventListener('change', () => {
+      const value = themeSelect.value;
+      try {
+        if (value === 'light' || value === 'dark') {
+          localStorage.setItem('wm-theme', value);
+          document.documentElement.dataset.theme = value;
+        } else {
+          localStorage.removeItem('wm-theme');
+          delete document.documentElement.dataset.theme;
+        }
+      } catch {
+        if (value === 'light' || value === 'dark') {
+          document.documentElement.dataset.theme = value;
+        } else {
+          delete document.documentElement.dataset.theme;
+        }
+      }
+    });
+  }
+</script>
+
+<style>
+  .site-header {
+    position: relative;
+    z-index: 20;
+    border-bottom: 1px solid var(--color-border);
+    background: color-mix(in srgb, var(--color-canvas) 92%, transparent);
+    backdrop-filter: blur(12px);
+  }
+
+  .header-inner {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    min-height: 4.6rem;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    color: var(--color-ink);
+    font-size: 1.05rem;
+    font-weight: 850;
+    text-decoration: none;
+  }
+
+  .brand-mark {
+    display: grid;
+    width: 2.35rem;
+    height: 2.35rem;
+    place-items: center;
+    border-radius: 0.7rem;
+    background: var(--color-primary);
+    color: #fff;
+    font-size: 0.72rem;
+    letter-spacing: -0.03em;
+  }
+
+  .nav-menu {
+    position: relative;
+  }
+
+  .nav-menu summary {
+    min-height: 2.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    padding: 0.55rem 0.9rem;
+    font-weight: 750;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .nav-menu summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .nav-menu nav {
+    position: absolute;
+    top: calc(100% + 0.65rem);
+    right: 0;
+    width: min(19rem, calc(100vw - 2rem));
+    border: 1px solid var(--color-border);
+    border-radius: 1rem;
+    padding: 0.6rem;
+    background: var(--color-surface);
+    box-shadow: var(--shadow-card);
+  }
+
+  .nav-menu ul {
+    display: grid;
+    gap: 0.15rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .nav-menu a {
+    display: flex;
+    min-height: 2.75rem;
+    align-items: center;
+    border-radius: 0.65rem;
+    padding: 0.55rem 0.7rem;
+    color: var(--color-ink);
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .nav-menu a:hover {
+    background: var(--color-primary-soft);
+  }
+
+  .theme-field select {
+    width: 3.2rem;
+    min-height: 2.75rem;
+    overflow: hidden;
+    padding-inline: 0.55rem;
+    color: transparent;
+    background-image:
+      radial-gradient(circle, var(--color-ink) 0 22%, transparent 24%),
+      linear-gradient(90deg, var(--color-ink) 50%, transparent 50%);
+    background-position: center;
+    background-size: 1rem 1rem;
+    background-repeat: no-repeat;
+  }
+
+  @media (max-width: 24rem) {
+    .brand > span:last-child {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      white-space: nowrap;
+      clip-path: inset(50%);
+    }
+  }
+
+  @media (min-width: 64rem) {
+    .header-inner {
+      grid-template-columns: auto 1fr auto;
+    }
+
+    .nav-menu summary {
+      display: none;
+    }
+
+    .nav-menu nav {
+      position: static;
+      width: auto;
+      border: 0;
+      padding: 0;
+      background: transparent;
+      box-shadow: none;
+    }
+
+    .nav-menu ul {
+      display: flex;
+      justify-content: center;
+    }
+
+    .nav-menu a {
+      padding-inline: 0.65rem;
+      font-size: 0.91rem;
+    }
+  }
+</style>

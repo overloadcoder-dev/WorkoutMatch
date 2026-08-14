@@ -1,0 +1,943 @@
+---
+type Props = { mode?: 'full' | 'quick' };
+const { mode = 'full' } = Astro.props;
+const quick = mode === 'quick';
+
+const durations = [5, 10, 15, 20, 30, 45];
+const equipment = [
+  ['none', 'Bodyweight / no equipment'],
+  ['one-dumbbell', 'One dumbbell'],
+  ['two-dumbbells', 'Two dumbbells'],
+  ['resistance-band', 'Resistance band'],
+  ['chair-or-bench', 'Chair or bench'],
+  ['pull-up-bar', 'Pull-up bar'],
+];
+const focuses = [
+  ['full-body', 'Full body'],
+  ['upper-body', 'Upper body'],
+  ['lower-body', 'Lower body'],
+  ['core', 'Core'],
+  ['arms', 'Arms'],
+  ['chest', 'Chest'],
+  ['back', 'Back'],
+  ['shoulders', 'Shoulders'],
+  ['glutes', 'Glutes'],
+];
+const goals = [
+  ['general-fitness', 'General fitness'],
+  ['strength', 'Strength'],
+  ['muscle-gain', 'Muscle gain'],
+  ['endurance', 'Endurance'],
+  ['mobility', 'Mobility'],
+  ['low-impact-movement', 'Low-impact movement'],
+];
+const sensitivities = [
+  ['wrist-load', 'Wrist-loading movements'],
+  ['knee-flexion', 'Deep knee flexion'],
+  ['shoulder-overhead', 'Overhead shoulder work'],
+  ['lower-back-load', 'Higher lower-back loading'],
+  ['floor-transition', 'Frequent floor transitions'],
+];
+---
+
+<div class="generator-shell" data-generator-mode={mode}>
+  <form
+    id={`${mode}-generator-form`}
+    class="generator-form card card-pad"
+    novalidate
+  >
+    <div class="form-heading">
+      <div>
+        <p class="eyebrow">
+          {quick ? 'Four quick choices' : 'Match your situation'}
+        </p>
+        <h2>{quick ? 'What works right now?' : 'Build your workout'}</h2>
+      </div>
+      <button class="button button-secondary" type="reset">Reset</button>
+    </div>
+
+    <div
+      class="error-summary"
+      data-error-summary
+      role="alert"
+      tabindex="-1"
+      hidden
+    >
+      <h3>Check your choices</h3>
+      <p data-error-message></p>
+      <ul data-error-reasons></ul>
+    </div>
+
+    <fieldset class="form-section">
+      <legend>How much time do you have?</legend>
+      <div class="choice-grid compact-choices">
+        {
+          durations.map((duration) => (
+            <label class="choice">
+              <input
+                type="radio"
+                name="duration"
+                value={duration}
+                checked={duration === 15}
+              />{' '}
+              {duration} min
+            </label>
+          ))
+        }
+      </div>
+    </fieldset>
+
+    <fieldset class="form-section">
+      <legend>What equipment is available?</legend>
+      <p class="field-help">
+        Choose all you have. Bodyweight movements can still appear with
+        equipment.
+      </p>
+      <div class="choice-grid">
+        {
+          equipment.map(([value, label], index) => (
+            <label class="choice">
+              <input
+                type="checkbox"
+                name="equipment"
+                value={value}
+                checked={index === 0}
+              />{' '}
+              {label}
+            </label>
+          ))
+        }
+      </div>
+      <p class="field-error error-text" data-equipment-error></p>
+    </fieldset>
+
+    <div class="form-section split-fields">
+      <div class="field">
+        <label for={`${mode}-focus`}>Muscle focus</label>
+        <select id={`${mode}-focus`} name="focus">
+          {
+            focuses.map(([value, label]) => (
+              <option value={value}>{label}</option>
+            ))
+          }
+        </select>
+      </div>
+      {
+        !quick && (
+          <div class="field">
+            <label for={`${mode}-goal`}>Goal for this session</label>
+            <select id={`${mode}-goal`} name="goal">
+              {goals.map(([value, label]) => (
+                <option value={value}>{label}</option>
+              ))}
+            </select>
+          </div>
+        )
+      }
+    </div>
+
+    <fieldset class="form-section">
+      <legend>Environment and movement setup</legend>
+      <div class="choice-grid">
+        {
+          quick ? (
+            <>
+              <label class="choice">
+                <input type="checkbox" name="quiet" /> Quiet
+              </label>
+              <label class="choice">
+                <input type="checkbox" name="noJump" /> No jumping
+              </label>
+            </>
+          ) : (
+            <>
+              <label class="choice">
+                <input type="checkbox" name="quiet" /> Quiet
+              </label>
+              <label class="choice">
+                <input type="checkbox" name="noJump" /> No jumping
+              </label>
+              <label class="choice">
+                <input type="checkbox" name="standingOnly" /> Standing only
+              </label>
+              <label class="choice">
+                <input type="checkbox" name="noFloor" /> No floor exercises
+              </label>
+            </>
+          )
+        }
+      </div>
+      {
+        !quick && (
+          <div class="field space-field">
+            <label for={`${mode}-space`}>Usable space</label>
+            <select id={`${mode}-space`} name="space">
+              <option value="very-small">
+                Very small — about one exercise mat
+              </option>
+              <option value="small">
+                Small — room for a step in each direction
+              </option>
+              <option value="medium" selected>
+                Medium — room to move several steps
+              </option>
+            </select>
+          </div>
+        )
+      }
+    </fieldset>
+
+    <details class="advanced-options" open={!quick}>
+      <summary
+        >{
+          quick ? 'Advanced options' : 'Experience and movements to avoid today'
+        }</summary
+      >
+      <div class="advanced-body">
+        <fieldset class="form-section">
+          <legend>Experience</legend>
+          <div class="choice-grid compact-choices">
+            <label class="choice"
+              ><input type="radio" name="experience" value="beginner" checked /> Beginner</label
+            >
+            <label class="choice"
+              ><input type="radio" name="experience" value="intermediate" /> Intermediate</label
+            >
+            <label class="choice"
+              ><input type="radio" name="experience" value="advanced" /> Advanced</label
+            >
+          </div>
+        </fieldset>
+        {
+          !quick && (
+            <fieldset class="form-section">
+              <legend>
+                Movements to avoid today <span class="muted">(optional)</span>
+              </legend>
+              <p class="field-help">
+                These conservative filters are preferences, not a diagnosis or
+                rehabilitation tool.
+              </p>
+              <div class="choice-grid">
+                {sensitivities.map(([value, label]) => (
+                  <label class="choice">
+                    <input type="checkbox" name="sensitivity" value={value} />{' '}
+                    {label}
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+          )
+        }
+      </div>
+    </details>
+
+    {quick && <input type="hidden" name="goal" value="general-fitness" />}
+    {quick && <input type="hidden" name="space" value="medium" />}
+    <p class="muted safety-copy">
+      Choose ranges you can control and stop any movement that feels wrong for
+      you. Read the <a href="/safety/">safety guide</a>.
+    </p>
+    <button class="button generate-button" type="submit"
+      >Generate workout</button
+    >
+  </form>
+
+  <div
+    class="generator-status status"
+    data-generator-status
+    role="status"
+    hidden
+  >
+  </div>
+
+  <section
+    class="workout-result"
+    data-workout-result
+    aria-labelledby={`${mode}-result-title`}
+    tabindex="-1"
+    hidden
+  >
+    <header class="result-header card card-pad">
+      <div>
+        <p class="eyebrow">Matched workout</p>
+        <h2 id={`${mode}-result-title`} data-workout-title></h2>
+        <p class="lede" data-workout-rationale></p>
+      </div>
+      <dl class="workout-facts">
+        <div><dt>Estimated time</dt><dd data-workout-duration></dd></div>
+        <div><dt>Format</dt><dd data-workout-format></dd></div>
+        <div><dt>Equipment</dt><dd data-workout-equipment></dd></div>
+      </dl>
+      <div data-workout-warnings></div>
+    </header>
+
+    <div data-workout-sections></div>
+
+    <aside class="callout" data-safety-note></aside>
+    <div class="result-actions no-print">
+      <button class="button" type="button" data-start-guided
+        >Start guided mode</button
+      >
+      <button class="button button-secondary" type="button" data-regenerate
+        >Regenerate unlocked</button
+      >
+      <button class="button button-secondary" type="button" data-save
+        >Save locally</button
+      >
+      <button class="button button-secondary" type="button" data-share
+        >Copy share link</button
+      >
+      <button class="button button-secondary" type="button" data-print
+        >Print</button
+      >
+      <button class="button button-secondary" type="button" data-start-over
+        >Start over</button
+      >
+    </div>
+    <p class="status" data-result-status role="status" hidden></p>
+  </section>
+</div>
+
+<script>
+  import { EXERCISE_BY_ID } from '../../data/exercises';
+  import {
+    buildSafeShareQuery,
+    generateWorkout,
+    parseSafeShareQuery,
+    regenerateWorkout,
+    replaceExercise,
+    setExerciseLock,
+    shareQueryOmitsPrivatePreferences,
+  } from '../../lib/generator';
+  import {
+    openWorkoutMatchStorage,
+    type SavedWorkoutPlan,
+  } from '../../lib/storage';
+  import type { Equipment } from '../../types/exercise';
+  import type {
+    GeneratedWorkout,
+    GeneratedWorkoutExercise,
+    WorkoutGoal,
+  } from '../../types/workout';
+
+  document
+    .querySelectorAll<HTMLElement>('[data-generator-mode]')
+    .forEach((shell) => {
+      const mode = shell.dataset.generatorMode === 'quick' ? 'quick' : 'full';
+      const form = shell.querySelector<HTMLFormElement>('form');
+      const resultSection = shell.querySelector<HTMLElement>(
+        '[data-workout-result]',
+      );
+      const sectionsNode = shell.querySelector<HTMLElement>(
+        '[data-workout-sections]',
+      );
+      const status = shell.querySelector<HTMLElement>(
+        '[data-generator-status]',
+      );
+      const resultStatus = shell.querySelector<HTMLElement>(
+        '[data-result-status]',
+      );
+      let workout: GeneratedWorkout | null = null;
+
+      if (!form || !resultSection || !sectionsNode) return;
+
+      const selected = (name: string) =>
+        [
+          ...form.querySelectorAll<HTMLInputElement>(
+            `input[name="${name}"]:checked`,
+          ),
+        ].map((input) => input.value);
+      const checked = (name: string) =>
+        Boolean(
+          form.querySelector<HTMLInputElement>(`input[name="${name}"]:checked`),
+        );
+      const value = (name: string) =>
+        String(
+          (
+            form.elements.namedItem(name) as
+              HTMLInputElement | HTMLSelectElement | null
+          )?.value ?? '',
+        );
+      const humanize = (token: string) =>
+        token
+          .replaceAll('-', ' ')
+          .replace(/\b\w/g, (letter) => letter.toUpperCase());
+      const showResultStatus = (message: string) => {
+        if (!resultStatus) return;
+        resultStatus.textContent = message;
+        resultStatus.hidden = false;
+      };
+
+      const readInput = () => ({
+        durationMinutes: value('duration'),
+        equipment: selected('equipment'),
+        focus: value('focus'),
+        goal: (value('goal') || 'general-fitness') as WorkoutGoal,
+        experience: value('experience') || 'beginner',
+        environment: {
+          space: value('space') || 'medium',
+          quiet: checked('quiet'),
+          noJump: checked('noJump'),
+          standingOnly: checked('standingOnly'),
+          noFloor: checked('noFloor'),
+        },
+        avoidStressTags: selected('sensitivity'),
+      });
+
+      const createClientSeed = () => {
+        const values = new Uint32Array(2);
+        crypto.getRandomValues(values);
+        return `${values[0]?.toString(36)}-${values[1]?.toString(36)}`;
+      };
+
+      const clearError = () => {
+        const summary = form.querySelector<HTMLElement>('[data-error-summary]');
+        const equipmentError = form.querySelector<HTMLElement>(
+          '[data-equipment-error]',
+        );
+        if (summary) summary.hidden = true;
+        if (equipmentError) equipmentError.textContent = '';
+      };
+
+      const showIssue = (issue: {
+        message: string;
+        reasons: string[];
+        suggestions: string[];
+      }) => {
+        const summary = form.querySelector<HTMLElement>('[data-error-summary]');
+        const message = form.querySelector<HTMLElement>('[data-error-message]');
+        const list = form.querySelector<HTMLElement>('[data-error-reasons]');
+        if (message) message.textContent = issue.message;
+        list?.replaceChildren();
+        for (const detail of [...issue.reasons, ...issue.suggestions]) {
+          const item = document.createElement('li');
+          item.textContent = detail;
+          list?.append(item);
+        }
+        if (selected('equipment').length === 0) {
+          const equipmentError = form.querySelector<HTMLElement>(
+            '[data-equipment-error]',
+          );
+          if (equipmentError)
+            equipmentError.textContent =
+              'Select at least one equipment option.';
+        }
+        if (summary) {
+          summary.hidden = false;
+          summary.focus();
+        }
+      };
+
+      const targetText = (item: GeneratedWorkoutExercise) => {
+        const side =
+          item.target.sideHandling === 'each-side'
+            ? ' each side'
+            : item.target.sideHandling === 'alternate'
+              ? ' alternating'
+              : '';
+        if (item.target.mode === 'reps')
+          return `${item.target.sets} sets × ${item.target.reps} reps${side}`;
+        if (item.target.mode === 'time')
+          return `${item.target.sets} sets × ${item.target.workSeconds} sec${side}`;
+        return `${item.target.sets} sets × ${item.target.distanceMeters} m${side}`;
+      };
+
+      const variationLinks = (item: GeneratedWorkoutExercise) => {
+        const wrap = document.createElement('p');
+        wrap.className = 'variation-links';
+        const easier = item.exercise.easierVariationIds
+          .map((id) => EXERCISE_BY_ID.get(id))
+          .find(Boolean);
+        const harder = item.exercise.harderVariationIds
+          .map((id) => EXERCISE_BY_ID.get(id))
+          .find(Boolean);
+        if (easier) {
+          const link = document.createElement('a');
+          link.href = `/exercises/${easier.slug}/`;
+          link.textContent = `Easier: ${easier.name}`;
+          wrap.append(link);
+        }
+        if (harder) {
+          if (wrap.childNodes.length)
+            wrap.append(document.createTextNode(' · '));
+          const link = document.createElement('a');
+          link.href = `/exercises/${harder.slug}/`;
+          link.textContent = `Harder: ${harder.name}`;
+          wrap.append(link);
+        }
+        return wrap;
+      };
+
+      const exerciseCard = (item: GeneratedWorkoutExercise, index: number) => {
+        const card = document.createElement('article');
+        card.className = 'exercise-result-card card card-pad';
+        card.dataset.itemId = item.itemId;
+        const order = document.createElement('p');
+        order.className = 'eyebrow';
+        order.textContent = `Movement ${index + 1}`;
+        const title = document.createElement('h4');
+        const link = document.createElement('a');
+        link.href = `/exercises/${item.exercise.slug}/`;
+        link.textContent = item.exercise.name;
+        title.append(link);
+        const summary = document.createElement('p');
+        summary.className = 'muted';
+        summary.textContent = item.exercise.summary;
+        const prescription = document.createElement('p');
+        const strong = document.createElement('strong');
+        strong.textContent = targetText(item);
+        prescription.append(
+          strong,
+          document.createTextNode(` · Rest ${item.target.restSeconds} sec`),
+        );
+        const controls = document.createElement('div');
+        controls.className = 'exercise-actions no-print';
+        const lock = document.createElement('button');
+        lock.type = 'button';
+        lock.className = 'button button-secondary';
+        lock.dataset.action = 'lock';
+        lock.dataset.itemId = item.itemId;
+        lock.setAttribute('aria-pressed', String(item.locked));
+        lock.textContent = item.locked ? 'Unlock' : 'Lock';
+        const replace = document.createElement('button');
+        replace.type = 'button';
+        replace.className = 'button button-secondary';
+        replace.dataset.action = 'replace';
+        replace.dataset.itemId = item.itemId;
+        replace.disabled = item.locked;
+        replace.textContent = 'Replace';
+        controls.append(lock, replace);
+        card.append(
+          order,
+          title,
+          summary,
+          prescription,
+          variationLinks(item),
+          controls,
+        );
+        return card;
+      };
+
+      const render = (next: GeneratedWorkout) => {
+        workout = next;
+        resultSection.dataset.workoutSeed = next.seed;
+        const setText = (selector: string, text: string) => {
+          const node = resultSection.querySelector<HTMLElement>(selector);
+          if (node) node.textContent = text;
+        };
+        setText('[data-workout-title]', next.title);
+        setText('[data-workout-rationale]', next.rationale);
+        setText(
+          '[data-workout-duration]',
+          `${Math.max(1, Math.round(next.estimatedDurationSeconds / 60))} minutes`,
+        );
+        setText('[data-workout-format]', humanize(next.format));
+        setText(
+          '[data-workout-equipment]',
+          next.equipmentNeeded
+            .map((item) => (item === 'none' ? 'No equipment' : humanize(item)))
+            .join(', '),
+        );
+        const warningWrap = resultSection.querySelector<HTMLElement>(
+          '[data-workout-warnings]',
+        );
+        warningWrap?.replaceChildren();
+        for (const warning of next.warnings) {
+          const node = document.createElement('p');
+          node.className = 'callout';
+          node.textContent = warning;
+          warningWrap?.append(node);
+        }
+        sectionsNode.replaceChildren();
+        for (const section of [
+          next.sections.warmup,
+          next.sections.main,
+          next.sections.cooldown,
+        ]) {
+          const block = document.createElement('section');
+          block.className = 'result-section';
+          const heading = document.createElement('div');
+          heading.className = 'result-section-heading';
+          const title = document.createElement('h3');
+          title.textContent = section.label;
+          const time = document.createElement('p');
+          time.className = 'muted';
+          time.textContent = `About ${Math.max(1, Math.round(section.estimatedSeconds / 60))} min`;
+          heading.append(title, time);
+          const grid = document.createElement('div');
+          grid.className = 'result-exercise-grid';
+          section.exercises.forEach((item, index) =>
+            grid.append(exerciseCard(item, index)),
+          );
+          block.append(heading, grid);
+          sectionsNode.append(block);
+        }
+        setText('[data-safety-note]', next.safetyNote);
+        resultSection.hidden = false;
+        if (status) status.hidden = true;
+        if (resultStatus) resultStatus.hidden = true;
+        resultSection.focus();
+      };
+
+      form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        clearError();
+        if (status) {
+          status.textContent = 'Building your workout…';
+          status.hidden = false;
+        }
+        const generated = generateWorkout(readInput(), {
+          seed: createClientSeed(),
+        });
+        if (generated.ok) render(generated.workout);
+        else {
+          if (status) status.hidden = true;
+          resultSection.hidden = true;
+          showIssue(generated.issue);
+        }
+      });
+
+      form.addEventListener('reset', () =>
+        queueMicrotask(() => {
+          clearError();
+          workout = null;
+          resultSection.hidden = true;
+          if (status) status.hidden = true;
+        }),
+      );
+
+      sectionsNode.addEventListener('click', (event) => {
+        const button = (event.target as Element).closest<HTMLButtonElement>(
+          'button[data-action]',
+        );
+        if (!button || !workout || !button.dataset.itemId) return;
+        const operation =
+          button.dataset.action === 'lock'
+            ? setExerciseLock(
+                workout,
+                button.dataset.itemId,
+                button.getAttribute('aria-pressed') !== 'true',
+              )
+            : replaceExercise(workout, button.dataset.itemId);
+        if (operation.ok) render(operation.workout);
+        else
+          showResultStatus(
+            `${operation.issue.message} ${operation.issue.suggestions.join(' ')}`,
+          );
+      });
+
+      shell
+        .querySelector('[data-regenerate]')
+        ?.addEventListener('click', () => {
+          if (!workout) return;
+          const regenerated = regenerateWorkout(workout);
+          if (regenerated.ok) {
+            render(regenerated.workout);
+            showResultStatus('Unlocked exercises regenerated.');
+          } else
+            showResultStatus(
+              `${regenerated.issue.message} ${regenerated.issue.suggestions.join(' ')}`,
+            );
+        });
+
+      shell
+        .querySelector('[data-save]')
+        ?.addEventListener('click', async () => {
+          if (!workout) return;
+          const now = new Date().toISOString();
+          const plan: SavedWorkoutPlan = {
+            id: workout.id,
+            title: workout.title,
+            generatorVersion: workout.generatorVersion,
+            seed: workout.seed,
+            durationMinutes: Math.max(
+              1,
+              Math.round(workout.estimatedDurationSeconds / 60),
+            ),
+            equipment: workout.equipmentNeeded,
+            exercises: [
+              workout.sections.warmup,
+              workout.sections.main,
+              workout.sections.cooldown,
+            ].flatMap((section) =>
+              section.exercises.map((item) => ({
+                exerciseId: item.exerciseId,
+                name: item.exercise.name,
+                phase: item.section,
+                order: item.order,
+                ...(item.target.mode === 'reps'
+                  ? {
+                      sets: item.target.sets,
+                      reps: `${item.target.reps}${item.target.sideHandling === 'each-side' ? ' each side' : ''}`,
+                    }
+                  : {}),
+                ...(item.target.mode === 'time'
+                  ? {
+                      sets: item.target.sets,
+                      workSeconds: item.target.workSeconds,
+                    }
+                  : {}),
+                restSeconds: item.target.restSeconds,
+              })),
+            ),
+            createdAt: now,
+            updatedAt: now,
+          };
+          try {
+            const storage = await openWorkoutMatchStorage();
+            await storage.savePlan(plan);
+            storage.close();
+            showResultStatus(
+              'Workout saved in this browser. It is not backed up automatically.',
+            );
+          } catch (error) {
+            showResultStatus(
+              error instanceof Error
+                ? error.message
+                : 'Workout could not be saved locally.',
+            );
+          }
+        });
+
+      shell
+        .querySelector('[data-share]')
+        ?.addEventListener('click', async () => {
+          if (!workout) return;
+          if (shareQueryOmitsPrivatePreferences(workout.input)) {
+            const proceed = window.confirm(
+              'For privacy, the share link will omit your “movements to avoid today” filters. The recreated workout may therefore differ. Copy it anyway?',
+            );
+            if (!proceed) {
+              showResultStatus(
+                'Share cancelled. Private movement preferences were not copied.',
+              );
+              return;
+            }
+          }
+          const url = new URL('/generate/', window.location.origin);
+          url.search = buildSafeShareQuery(workout);
+          try {
+            await navigator.clipboard.writeText(url.toString());
+            showResultStatus('Privacy-safe workout link copied.');
+          } catch {
+            showResultStatus(
+              `Copy is unavailable. Select this link manually: ${url.toString()}`,
+            );
+          }
+        });
+
+      shell
+        .querySelector('[data-start-guided]')
+        ?.addEventListener('click', () => {
+          if (!workout) return;
+          try {
+            localStorage.setItem('wm-guided-workout', JSON.stringify(workout));
+            window.location.assign('/workout/player/');
+          } catch {
+            showResultStatus(
+              'Guided mode could not open because temporary browser storage is unavailable.',
+            );
+          }
+        });
+      shell
+        .querySelector('[data-print]')
+        ?.addEventListener('click', () => window.print());
+      shell
+        .querySelector('[data-start-over]')
+        ?.addEventListener('click', () => {
+          workout = null;
+          resultSection.hidden = true;
+          form.reset();
+          form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+
+      if (mode === 'full' && window.location.search.length > 1) {
+        const parsed = parseSafeShareQuery(window.location.search);
+        if (parsed.ok) {
+          const input = parsed.value.input;
+          const setControl = (name: string, controlValue: string | boolean) => {
+            if (typeof controlValue === 'boolean') {
+              const node = form.elements.namedItem(
+                name,
+              ) as HTMLInputElement | null;
+              if (node) node.checked = controlValue;
+            } else {
+              const node = form.querySelector<
+                HTMLInputElement | HTMLSelectElement
+              >(`[name="${name}"][value="${CSS.escape(controlValue)}"]`);
+              if (node instanceof HTMLInputElement) node.checked = true;
+              else if (node) node.value = controlValue;
+            }
+          };
+          form
+            .querySelectorAll<HTMLInputElement>('input[name="equipment"]')
+            .forEach(
+              (node) =>
+                (node.checked = input.equipment.includes(
+                  node.value as Equipment,
+                )),
+            );
+          setControl('duration', String(input.durationMinutes));
+          setControl('focus', input.focus);
+          setControl('goal', input.goal);
+          setControl('experience', input.experience);
+          setControl('space', input.environment.space);
+          setControl('quiet', input.environment.quiet);
+          setControl('noJump', input.environment.noJump);
+          setControl('standingOnly', input.environment.standingOnly);
+          setControl('noFloor', input.environment.noFloor);
+          const generated = generateWorkout(input, { seed: parsed.value.seed });
+          if (generated.ok) render(generated.workout);
+          else showIssue(generated.issue);
+        } else showIssue(parsed.issue);
+      }
+    });
+</script>
+
+<style>
+  .generator-shell {
+    display: grid;
+    gap: 2rem;
+  }
+  .generator-form {
+    box-shadow: none;
+  }
+  .form-heading,
+  .result-section-heading {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: start;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  .form-section {
+    display: grid;
+    gap: 0.65rem;
+    margin-top: 1.6rem;
+  }
+  .form-section legend {
+    margin-bottom: 0.6rem;
+    font-size: 1.1rem;
+  }
+  .field-help {
+    margin: 0;
+    color: var(--color-ink-muted);
+  }
+  .compact-choices {
+    grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
+  }
+  .split-fields {
+    display: grid;
+    gap: 1rem;
+    margin-top: 1.6rem;
+  }
+  .space-field {
+    max-width: 34rem;
+    margin-top: 1rem;
+  }
+  .advanced-options {
+    margin-top: 1.6rem;
+    border: 1px solid var(--color-border);
+    border-radius: 1rem;
+  }
+  .advanced-options summary {
+    min-height: 3.2rem;
+    padding: 0.85rem 1rem;
+    font-weight: 780;
+    cursor: pointer;
+  }
+  .advanced-body {
+    border-top: 1px solid var(--color-border);
+    padding: 0 1rem 1rem;
+  }
+  .safety-copy {
+    max-width: 46rem;
+    margin-top: 1.5rem;
+  }
+  .generate-button {
+    width: 100%;
+    margin-top: 1rem;
+  }
+  .error-summary {
+    margin-bottom: 1rem;
+    border: 2px solid var(--color-danger);
+    border-radius: 0.85rem;
+    padding: 1rem;
+  }
+  .workout-result {
+    display: grid;
+    gap: 1.5rem;
+  }
+  .result-header {
+    display: grid;
+    gap: 1.25rem;
+    background: var(--color-primary-soft);
+  }
+  .workout-facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+    gap: 0.7rem;
+    margin: 0;
+  }
+  .workout-facts div {
+    border-radius: 0.7rem;
+    padding: 0.75rem;
+    background: color-mix(in srgb, var(--color-surface) 75%, transparent);
+  }
+  .workout-facts dt {
+    color: var(--color-ink-muted);
+    font-size: 0.82rem;
+  }
+  .workout-facts dd {
+    margin: 0.15rem 0 0;
+    font-weight: 800;
+  }
+  .result-section {
+    padding-block: 0.5rem;
+  }
+  .result-exercise-grid {
+    display: grid;
+    gap: 0.8rem;
+  }
+  .exercise-result-card {
+    box-shadow: none;
+  }
+  .exercise-result-card h4 {
+    margin: 0;
+    font-size: 1.3rem;
+  }
+  .variation-links {
+    min-height: 1.5rem;
+    font-size: 0.9rem;
+  }
+  .exercise-actions,
+  .result-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+  }
+  .result-actions {
+    position: sticky;
+    z-index: 10;
+    bottom: 0;
+    border: 1px solid var(--color-border);
+    border-radius: 1rem;
+    padding: 0.75rem;
+    padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
+    background: color-mix(in srgb, var(--color-surface) 94%, transparent);
+    box-shadow: var(--shadow-card);
+    backdrop-filter: blur(12px);
+  }
+  @media (min-width: 42rem) {
+    .split-fields {
+      grid-template-columns: 1fr 1fr;
+    }
+    .generate-button {
+      width: auto;
+    }
+    .result-exercise-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+</style>

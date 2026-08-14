@@ -1,0 +1,8 @@
+---
+import CuratedWorkoutPage from './no-equipment.astro';
+import { getCuratedWorkout } from '../../data/curated-workouts';
+
+const workout = getCuratedWorkout('15-minute');
+---
+
+<CuratedWorkoutPage {workout} />

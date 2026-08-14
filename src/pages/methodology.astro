@@ -1,0 +1,273 @@
+---
+import Breadcrumbs from '../components/layout/Breadcrumbs.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { CITATIONS, citationList } from '../data/citations';
+---
+
+<BaseLayout
+  title="Workout and Calculator Methodology"
+  description="See how WorkoutMatch organizes balanced sessions, applies constraints, calculates adult BMI, BMR, and TDEE estimates, and documents its source limitations."
+  path="/methodology/"
+>
+  <div class="container">
+    <Breadcrumbs
+      items={[{ label: 'Home', href: '/' }, { label: 'Methodology' }]}
+    />
+  </div>
+
+  <header class="narrow section-sm">
+    <p class="eyebrow">How WorkoutMatch works</p>
+    <h1>Methodology</h1>
+    <p class="lede">
+      WorkoutMatch turns explicit user constraints into general exercise
+      sessions and shows the formulas behind its adult calculators. This page
+      explains those rules, their sources, and where an estimate or template
+      stops being useful.
+    </p>
+  </header>
+
+  <article class="narrow methodology">
+    <section aria-labelledby="workout-method-heading">
+      <h2 id="workout-method-heading">How workouts are assembled</h2>
+      <p>
+        The generator is rule-based. It first validates duration, experience,
+        goal, focus, available equipment, space, noise, impact, position, and
+        any selected movement preferences. It removes exercises that conflict
+        with those inputs before filling a duration- and focus-specific
+        template.
+      </p>
+      <p>
+        For a full-body session with enough time, the template tries to cover
+        knee-dominant, hip-dominant, push, pull, and trunk or carry patterns.
+        Short or focused sessions use reduced templates rather than pretending
+        every pattern fits. Candidate exercises are scored together to avoid
+        duplicates and excessive repetition of one primary area. Warm-up and
+        cooldown time are part of the requested duration.
+      </p>
+
+      <h3>Constraints remain binding</h3>
+      <ul>
+        <li>
+          One-dumbbell availability cannot fill a movement that simultaneously
+          requires two dumbbells.
+        </li>
+        <li>
+          Standing-only and no-floor selections remove non-standing exercise
+          positions.
+        </li>
+        <li>
+          No-jumping excludes high-impact jumping movements; quiet removes
+          exercises classified as loud.
+        </li>
+        <li>Beginner mode excludes advanced-only entries.</li>
+        <li>
+          If the remaining set cannot fill a coherent template, the result
+          explains the conflict instead of silently ignoring it.
+        </li>
+      </ul>
+
+      <div class="callout">
+        <h3>What “balanced” means here</h3>
+        <p>
+          Balanced means the chosen template covers complementary movement
+          patterns within the stated constraints. It does not mean medically
+          balanced, personalized to anatomy, or optimal for every person, sport,
+          goal, or week of training.
+        </p>
+      </div>
+    </section>
+
+    <section aria-labelledby="activity-context-heading">
+      <h2 id="activity-context-heading">Public-health activity context</h2>
+      <p>
+        The <a href={CITATIONS.whoActivity.url}
+          >World Health Organization physical-activity source</a
+        >
+        describes physical activity broadly as movement that requires energy expenditure.
+        It says all physical activity counts, any amount is better than none, and
+        muscle strengthening benefits everyone. Its guidelines are population-level
+        public-health recommendations covering frequency, intensity, and duration—not
+        a personalized prescription from this site.
+      </p>
+      <p>
+        For adults, WHO recommends 150–300 minutes of moderate-intensity aerobic
+        activity, 75–150 minutes of vigorous-intensity aerobic activity, or an
+        equivalent combination across the week. It also recommends
+        muscle-strengthening activity involving the major muscle groups on two
+        or more days a week. That weekly public-health context should not be
+        read as a requirement to begin at the full amount or to make every
+        WorkoutMatch session vigorous. A beginner may choose a smaller,
+        manageable amount and build gradually when appropriate.
+      </p>
+    </section>
+
+    <section aria-labelledby="calculator-method-heading">
+      <h2 id="calculator-method-heading">Calculator formulas</h2>
+
+      <h3>Adult body mass index</h3>
+      <p>
+        BMI is calculated as weight in kilograms divided by height in metres
+        squared. The
+        <a href={CITATIONS.cdcBmiOverview.url}>CDC BMI overview</a> describes it as
+        a screening measure of weight relative to height. It does not directly measure
+        body fat and does not distinguish fat, muscle, and bone mass or show where
+        fat is carried. An individual interpretation needs other information; BMI
+        is not a diagnosis.
+      </p>
+      <p>
+        For adults aged 20 and older, WorkoutMatch follows the
+        <a href={CITATIONS.cdcBmiCategories.url}>CDC adult categories</a>: below
+        18.5, 18.5 to below 25, 25 to below 30, and 30 or above. The site does
+        not apply these adult thresholds to children or teens.
+      </p>
+
+      <h3>Mifflin–St Jeor resting-energy estimate</h3>
+      <p>
+        The BMR tool uses the sex-specific simplified equations reported in the
+        <a href={CITATIONS.mifflinPaper.url}
+          >original Mifflin and colleagues publication</a
+        >. With weight in kilograms, height in centimetres, and age in years,
+        the equations used are:
+      </p>
+      <div
+        class="formula-card card card-pad"
+        aria-label="Mifflin–St Jeor equations"
+      >
+        <p><strong>Male equation:</strong> 10 × kg + 6.25 × cm − 5 × age + 5</p>
+        <p>
+          <strong>Female equation:</strong> 10 × kg + 6.25 × cm − 5 × age − 161
+        </p>
+      </div>
+      <p>
+        The 1990 paper derived a predictive equation from 498 healthy subjects
+        aged 19–78 whose resting energy expenditure was measured by indirect
+        calorimetry. A calculated result remains a prediction, not a metabolic
+        measurement. The sex input is required by this specific published
+        equation and is not a complete statement of gender identity; the tool
+        can show both estimates.
+      </p>
+
+      <h3>Total daily energy expenditure estimate</h3>
+      <p>
+        TDEE multiplies a Mifflin–St Jeor estimate by the selected activity
+        factor. Those categories are centralized heuristics, and selecting one
+        is subjective. The tool displays the exact factor and a range based on
+        neighbouring categories where available. Its −10%, maintenance, and +10%
+        values are arithmetic comparisons, not dietary recommendations or
+        guaranteed weight-change plans.
+      </p>
+    </section>
+
+    <section aria-labelledby="limits-heading">
+      <h2 id="limits-heading">Limitations and review boundaries</h2>
+      <ul>
+        <li>
+          The generator cannot observe technique, symptoms, readiness, fatigue,
+          or the safety of a room or piece of equipment.
+        </li>
+        <li>
+          Movement-avoidance tags are conservative filter preferences, not
+          medical contraindications or diagnoses.
+        </li>
+        <li>
+          A single generated or curated workout is not a personalized multi-week
+          program.
+        </li>
+        <li>
+          BMI and energy equations simplify individual variation and should not
+          be presented as measurements.
+        </li>
+        <li>
+          No page is claimed to be medically or professionally reviewed unless a
+          real reviewer and review record are explicitly present; no such claim
+          is made here.
+        </li>
+      </ul>
+      <p>
+        See <a href="/safety/">Safety</a> for decision guidance, or use the
+        <a href="/generate/">workout generator</a> after reviewing these boundaries.
+      </p>
+    </section>
+
+    <section aria-labelledby="sources-heading">
+      <h2 id="sources-heading">Source register</h2>
+      <p>
+        These links are centralized in the project so calculator and
+        health-context copy can be audited. “Source checked” records when this
+        implementation last checked the linked page; it is not a medical review
+        date.
+      </p>
+      <ul class="source-list">
+        {
+          citationList.map((source) => (
+            <li class="card card-pad" id={source.id}>
+              <a href={source.url}>{source.title}</a>
+              <span>{source.publisher}</span>
+              <small>Source checked {source.reviewedOn}</small>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+  </article>
+</BaseLayout>
+
+<style>
+  .methodology {
+    padding-bottom: 2rem;
+  }
+
+  .methodology > section + section {
+    margin-top: clamp(3rem, 7vw, 5rem);
+    border-top: 1px solid var(--color-border);
+    padding-top: clamp(2rem, 5vw, 3.5rem);
+  }
+
+  .methodology p,
+  .methodology li {
+    color: var(--color-ink-muted);
+  }
+
+  .methodology li + li {
+    margin-top: 0.55rem;
+  }
+
+  .callout,
+  .formula-card {
+    margin-top: 1.5rem;
+  }
+
+  .callout h3 {
+    margin-top: 0;
+  }
+
+  .formula-card p {
+    overflow-wrap: anywhere;
+    color: var(--color-ink);
+  }
+
+  .formula-card p:last-child {
+    margin-bottom: 0;
+  }
+
+  .source-list {
+    display: grid;
+    gap: 0.75rem;
+    margin: 1.5rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .source-list li {
+    display: grid;
+    gap: 0.25rem;
+  }
+
+  .source-list a {
+    font-weight: 780;
+  }
+
+  .source-list small {
+    color: var(--color-ink-muted);
+  }
+</style>

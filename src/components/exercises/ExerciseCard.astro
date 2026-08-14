@@ -1,0 +1,118 @@
+---
+import type { Exercise } from '../../types/exercise';
+
+type Props = { exercise: Exercise };
+
+const { exercise } = Astro.props;
+const allMuscles = [
+  ...new Set([...exercise.primaryMuscles, ...exercise.secondaryMuscles]),
+];
+const searchText = [exercise.name, ...exercise.aliases]
+  .join(' ')
+  .toLocaleLowerCase('en');
+
+const LABELS: Readonly<Record<string, string>> = {
+  none: 'No equipment',
+  'one-dumbbell': 'One dumbbell',
+  'two-dumbbells': 'Two dumbbells',
+  'resistance-band': 'Resistance band',
+  'chair-or-bench': 'Chair or bench',
+  'pull-up-bar': 'Pull-up bar',
+};
+
+const labelFor = (value: string): string =>
+  LABELS[value] ??
+  value
+    .split('-')
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ');
+---
+
+<li
+  class="exercise-card card card-pad"
+  data-exercise-card
+  data-search={searchText}
+  data-equipment={exercise.equipment.join(' ')}
+  data-muscle={allMuscles.join(' ')}
+  data-pattern={exercise.movementPattern}
+  data-difficulty={exercise.difficulty}
+  data-position={exercise.position}
+  data-impact={exercise.impact}
+  data-noise={exercise.noise}
+  data-space={exercise.space}
+>
+  <article>
+    <div class="card-heading">
+      <p class="pattern">{labelFor(exercise.movementPattern)}</p>
+      <h2><a href={`/exercises/${exercise.slug}/`}>{exercise.name}</a></h2>
+    </div>
+    <p>{exercise.summary}</p>
+    {
+      exercise.aliases.length > 0 && (
+        <p class="aliases">
+          <span>Also called:</span> {exercise.aliases.join(', ')}
+        </p>
+      )
+    }
+    <ul class="tag-list" aria-label={`${exercise.name} attributes`}>
+      {exercise.equipment.map((item) => <li class="tag">{labelFor(item)}</li>)}
+      <li class="tag">{labelFor(exercise.difficulty)}</li>
+      <li class="tag">{labelFor(exercise.position)}</li>
+    </ul>
+    <p class="details-link">
+      <a href={`/exercises/${exercise.slug}/`}
+        >View instructions and variations</a
+      >
+    </p>
+  </article>
+</li>
+
+<style>
+  .exercise-card {
+    min-width: 0;
+  }
+
+  article {
+    display: grid;
+    height: 100%;
+    align-content: start;
+  }
+
+  .pattern {
+    margin: 0 0 0.35rem;
+    color: var(--color-primary-strong);
+    font-size: 0.76rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  h2 {
+    margin-bottom: 0;
+    font-size: clamp(1.35rem, 2.4vw, 1.75rem);
+  }
+
+  article > p:not(.details-link) {
+    color: var(--color-ink-muted);
+  }
+
+  .aliases {
+    margin-top: -0.15rem;
+    font-size: 0.9rem;
+  }
+
+  .aliases span {
+    color: var(--color-ink);
+    font-weight: 750;
+  }
+
+  .tag-list {
+    align-self: end;
+    margin-top: 0.4rem;
+  }
+
+  .details-link {
+    margin: 1rem 0 0;
+    font-weight: 750;
+  }
+</style>

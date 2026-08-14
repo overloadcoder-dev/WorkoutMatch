@@ -1,0 +1,67 @@
+---
+import { createHash } from 'node:crypto';
+import type { CspHash } from 'astro';
+import { absoluteUrl } from '../../config/site';
+
+type Crumb = { label: string; href?: string };
+type Props = { items: Crumb[] };
+
+const { items } = Astro.props;
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: items.map((item, index) => ({
+    '@type': 'ListItem',
+    position: index + 1,
+    name: item.label,
+    ...(item.href ? { item: absoluteUrl(item.href) } : {}),
+  })),
+};
+const serializedJsonLd = JSON.stringify(jsonLd).replaceAll('<', '\\u003c');
+const jsonLdHash =
+  `sha256-${createHash('sha256').update(serializedJsonLd).digest('base64')}` as CspHash;
+Astro.csp?.insertScriptHash(jsonLdHash);
+---
+
+<nav class="breadcrumbs no-print" aria-label="Breadcrumb">
+  <ol>
+    {
+      items.map((item, index) => (
+        <li>
+          {item.href && index < items.length - 1 ? (
+            <a href={item.href}>{item.label}</a>
+          ) : (
+            <span
+              aria-current={index === items.length - 1 ? 'page' : undefined}
+            >
+              {item.label}
+            </span>
+          )}
+        </li>
+      ))
+    }
+  </ol>
+</nav>
+<script is:inline type="application/ld+json" set:html={serializedJsonLd} />
+
+<style>
+  .breadcrumbs {
+    padding-block: 1.1rem 0;
+  }
+
+  ol {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin: 0;
+    padding: 0;
+    color: var(--color-ink-muted);
+    font-size: 0.9rem;
+    list-style: none;
+  }
+
+  li:not(:last-child)::after {
+    margin-inline-start: 0.4rem;
+    content: '/';
+  }
+</style>

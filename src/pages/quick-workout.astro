@@ -1,0 +1,50 @@
+---
+import FaqList from '../components/content/FaqList.astro';
+import WorkoutGenerator from '../components/generator/WorkoutGenerator.astro';
+import Breadcrumbs from '../components/layout/Breadcrumbs.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const faqs = [
+  {
+    question: 'What does beginner-friendly change?',
+    answer:
+      'It excludes advanced-only exercises and uses straightforward set structures. Open Advanced options if a different experience level fits you.',
+  },
+  {
+    question: 'Does quick mode use a simpler randomizer?',
+    answer:
+      'No. It uses the same constraint-aware engine as the full generator, with sensible defaults for the questions it skips.',
+  },
+];
+---
+
+<BaseLayout
+  title="Quick workout generator"
+  description="Choose time, equipment, focus, and quiet or no-jumping preferences for a balanced beginner-friendly workout you can start now."
+  path="/quick-workout/"
+>
+  <div class="container">
+    <Breadcrumbs
+      items={[{ label: 'Home', href: '/' }, { label: 'Quick workout' }]}
+    />
+  </div>
+  <header class="section-sm narrow">
+    <p class="eyebrow">Fewer questions, same matching engine</p>
+    <h1>Get a quick workout</h1>
+    <p class="lede">
+      Pick the essentials. Quick mode defaults to beginner-friendly general
+      fitness in a medium space, then follows the same balance and constraint
+      rules as the full builder.
+    </p>
+  </header>
+  <div class="container section-sm"><WorkoutGenerator mode="quick" /></div>
+  <section class="narrow section prose">
+    <h2>When to use the full builder</h2>
+    <p>
+      Use the <a href="/generate/">full workout generator</a> when you need standing-only
+      or no-floor sessions, very small spaces, a specific goal, or conservative movement-characteristic
+      filters.
+    </p>
+    <FaqList items={faqs} />
+  </section>
+</BaseLayout>

@@ -1,0 +1,169 @@
+---
+import Breadcrumbs from '../components/layout/Breadcrumbs.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="About WorkoutMatch"
+  description="Learn why WorkoutMatch focuses on practical workout constraints, what the browser-only product includes, and what it deliberately does not claim."
+  path="/about/"
+>
+  <div class="container">
+    <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'About' }]} />
+  </div>
+
+  <header class="container section-sm about-hero">
+    <div>
+      <p class="eyebrow">Why this product exists</p>
+      <h1>About WorkoutMatch</h1>
+      <p class="lede">
+        WorkoutMatch starts with the circumstances people actually face: limited
+        time, one piece of equipment, a small room, neighbours below, or a
+        preference to avoid certain kinds of movement today.
+      </p>
+    </div>
+    <aside class="card card-pad promise">
+      <p class="eyebrow">Primary promise</p>
+      <p>Choose what you have. Get a balanced workout you can start now.</p>
+    </aside>
+  </header>
+
+  <article class="narrow about-content">
+    <section aria-labelledby="approach-heading">
+      <h2 id="approach-heading">A constraint-first approach</h2>
+      <p>
+        Many workout lists assume a full gym, plenty of floor space, or freedom
+        to jump and make noise. WorkoutMatch instead treats equipment, duration,
+        space, impact, noise, and position as first-class inputs. A rule-based
+        generator then tries to cover complementary movement patterns without
+        selecting exercises that violate those choices.
+      </p>
+      <p>
+        The shortest route is the <a href="/quick-workout/"
+          >quick workout builder</a
+        >. The
+        <a href="/generate/">full generator</a> adds goal, experience, detailed environment
+        needs, muscle focus, and optional movements to avoid today. Eight <a
+          href="/workouts/">curated workout pages</a
+        >
+        provide substantial static examples when a familiar scenario is enough.
+      </p>
+    </section>
+
+    <section aria-labelledby="built-heading">
+      <h2 id="built-heading">What is built into the experience</h2>
+      <div class="grid-cards">
+        <article class="card card-pad">
+          <h3>Static information first</h3>
+          <p>
+            Core explanations, workout examples, exercise instructions,
+            formulas, and limitations remain readable as normal HTML.
+          </p>
+        </article>
+        <article class="card card-pad">
+          <h3>Interaction only where useful</h3>
+          <p>
+            Generation, timers, filters, calculators, and local progress use
+            focused browser scripts rather than turning the whole site into a
+            client application.
+          </p>
+        </article>
+        <article class="card card-pad">
+          <h3>Local by design</h3>
+          <p>
+            No account or WorkoutMatch cloud sync is required. Personal workout
+            and calculator data stay on the device under the boundaries
+            explained on the privacy page.
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <section aria-labelledby="not-heading">
+      <h2 id="not-heading">What WorkoutMatch is not</h2>
+      <ul>
+        <li>
+          It is not a clinician, coach, diagnostic tool, or rehabilitation
+          service.
+        </li>
+        <li>
+          It does not promise weight change, calorie burn, fitness outcomes, or
+          a perfect workout.
+        </li>
+        <li>
+          It does not create public profiles, rankings, testimonials, or social
+          feeds.
+        </li>
+        <li>
+          It does not claim medical or professional review that has not
+          occurred.
+        </li>
+        <li>
+          It is not designed for children, teen calculators,
+          pregnancy/postpartum programming, or emergencies.
+        </li>
+      </ul>
+      <p>
+        Read <a href="/methodology/">how the rules and equations work</a> and
+        <a href="/safety/"
+          >how to use general exercise information conservatively</a
+        >.
+      </p>
+    </section>
+
+    <section class="callout" aria-labelledby="name-heading">
+      <h2 id="name-heading">A working name</h2>
+      <p>
+        WorkoutMatch is a working product name kept in central configuration so
+        it can change. The name, associated domain, and brand have not been
+        represented as legally cleared.
+      </p>
+    </section>
+  </article>
+</BaseLayout>
+
+<style>
+  .about-hero {
+    display: grid;
+    gap: clamp(1.5rem, 4vw, 3rem);
+    align-items: center;
+  }
+
+  .promise > p:last-child {
+    margin: 0;
+    color: var(--color-ink);
+    font-family: var(--font-display);
+    font-size: clamp(1.45rem, 3vw, 2.2rem);
+    font-weight: 780;
+    line-height: 1.15;
+  }
+
+  .about-content > section + section {
+    margin-top: clamp(3rem, 7vw, 5rem);
+  }
+
+  .about-content p,
+  .about-content li,
+  .about-content article p {
+    color: var(--color-ink-muted);
+  }
+
+  .about-content li + li {
+    margin-top: 0.5rem;
+  }
+
+  .about-content article p:last-child,
+  .about-content .callout p:last-child {
+    margin-bottom: 0;
+  }
+
+  .about-content .callout h2 {
+    font-size: 1.6rem;
+  }
+
+  @media (min-width: 50rem) {
+    .about-hero {
+      grid-template-columns: minmax(0, 1.4fr) minmax(18rem, 0.6fr);
+    }
+  }
+</style>

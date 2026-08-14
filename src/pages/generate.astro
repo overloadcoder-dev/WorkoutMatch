@@ -1,0 +1,84 @@
+---
+import FaqList from '../components/content/FaqList.astro';
+import WorkoutGenerator from '../components/generator/WorkoutGenerator.astro';
+import AdSlot from '../components/layout/AdSlot.astro';
+import Breadcrumbs from '../components/layout/Breadcrumbs.astro';
+import { absoluteUrl } from '../config/site';
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const faqs = [
+  {
+    question: 'Is the workout random?',
+    answer:
+      'A seeded, deterministic rules engine filters for every selected constraint, fills balanced movement slots, and then varies compatible choices. The same version, dataset, inputs, and seed reproduce the same workout.',
+  },
+  {
+    question: 'What if my filters are too narrow?',
+    answer:
+      'WorkoutMatch will not silently ignore them. It explains why a complete workout was not possible and suggests specific options you could relax.',
+  },
+  {
+    question: 'Are movement preferences medical advice?',
+    answer:
+      'No. They are conservative ways to remove certain movement characteristics for today. They do not diagnose an injury or make a workout suitable for rehabilitation.',
+  },
+];
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebApplication',
+  name: 'WorkoutMatch workout generator',
+  applicationCategory: 'HealthApplication',
+  operatingSystem: 'Any modern web browser',
+  url: absoluteUrl('/generate/'),
+  description: 'A browser-based, constraint-aware workout builder for adults.',
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+};
+---
+
+<BaseLayout
+  title="Constraint-aware workout generator"
+  description="Build a balanced 5–45 minute workout around your equipment, space, noise, experience, focus, and movement preferences. No account required."
+  path="/generate/"
+  jsonLd={jsonLd}
+>
+  <div class="container">
+    <Breadcrumbs
+      items={[{ label: 'Home', href: '/' }, { label: 'Build a workout' }]}
+    />
+  </div>
+  <header class="section-sm narrow">
+    <p class="eyebrow">Choose what you have</p>
+    <h1>Build a workout that fits real life</h1>
+    <p class="lede">
+      Match a 5–45 minute session to the equipment, floor space, noise limits,
+      experience, and movement setup you actually have today.
+    </p>
+  </header>
+  <div class="container section-sm"><WorkoutGenerator mode="full" /></div>
+  <AdSlot placement="generator-after-result" />
+  <section class="narrow section prose">
+    <h2>How matching works</h2>
+    <p>
+      The generator first removes every exercise that conflicts with your
+      selected equipment, space, impact, noise, body position, experience, or
+      movements-to-avoid preferences. It then fills a duration-and-focus
+      template with distinct movement patterns, favoring useful compound
+      movements without repeating the same primary muscles excessively.
+    </p>
+    <p>
+      A full-body session of sufficient length aims to cover knee-dominant,
+      hip-dominant, push, pull, and core or carry patterns. Short sessions use a
+      reduced template. Warm-up and cooldown time stay inside the total
+      estimate.
+    </p>
+    <h2>Your inputs stay on this device</h2>
+    <p>
+      Generation runs in your browser. WorkoutMatch application code does not
+      send these choices to a server. Share links use a strict allowlist and
+      intentionally omit movement sensitivities and local history. Ordinary
+      requests for page assets still occur.
+    </p>
+    <FaqList items={faqs} />
+  </section>
+</BaseLayout>

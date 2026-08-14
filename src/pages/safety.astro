@@ -1,0 +1,187 @@
+---
+import Breadcrumbs from '../components/layout/Breadcrumbs.astro';
+import FaqList from '../components/content/FaqList.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { CITATIONS } from '../data/citations';
+
+const faqs = [
+  {
+    question:
+      'Does choosing a low-impact or no-jumping workout make it medically safe for me?',
+    answer:
+      'No. Those labels describe exercise characteristics, not your individual readiness. Symptoms, health conditions, medications, pregnancy, recovery, and clinician instructions may change what is appropriate.',
+  },
+  {
+    question: 'Should exercise feel uncomfortable?',
+    answer:
+      'Effort and temporary muscle fatigue can occur, but pain, dizziness, faintness, chest pressure, or unusual shortness of breath are not targets. Stop and seek appropriate help when symptoms concern you.',
+  },
+  {
+    question: 'Can WorkoutMatch filter around an injury?',
+    answer:
+      'It can omit broad movement characteristics you select, such as wrist loading or deep knee flexion, but that is only a preference filter. It cannot diagnose an injury or design rehabilitation.',
+  },
+];
+---
+
+<BaseLayout
+  title="Workout Safety and Readiness Guidance"
+  description="Read practical pre-workout checks, stop signals, equipment guidance, and the limits of general WorkoutMatch exercise information."
+  path="/safety/"
+>
+  <div class="container">
+    <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Safety' }]} />
+  </div>
+
+  <header class="narrow section-sm">
+    <p class="eyebrow">Before you move</p>
+    <h1>Workout safety</h1>
+    <p class="lede">
+      WorkoutMatch provides general exercise organization for adults. It cannot
+      assess your health, observe your form, inspect your equipment, or
+      determine whether a workout is appropriate for you.
+    </p>
+  </header>
+
+  <article class="narrow safety-content">
+    <section class="callout" aria-labelledby="urgent-heading">
+      <h2 id="urgent-heading">Stop when something feels wrong</h2>
+      <p>
+        Stop exercising if you develop pain, dizziness, faintness, chest
+        pressure, unusual shortness of breath, loss of control, or another
+        concerning symptom. Seek urgent medical help for severe or emergency
+        symptoms according to the services available where you are. This website
+        cannot triage symptoms.
+      </p>
+    </section>
+
+    <section aria-labelledby="before-heading">
+      <h2 id="before-heading">Before a session</h2>
+      <ul>
+        <li>
+          Read the complete workout and each unfamiliar exercise before starting
+          a timer.
+        </li>
+        <li>
+          Clear trip hazards, allow enough overhead and side clearance, and
+          choose a surface with reliable traction.
+        </li>
+        <li>
+          Inspect bands for damage, verify pull-up bars and anchors according to
+          their instructions, and keep chairs or benches from rolling or
+          sliding.
+        </li>
+        <li>
+          Choose a load you can lift into position and put down under control.
+          Do not rely on dropping equipment.
+        </li>
+        <li>
+          Keep water and any personally needed supplies accessible without
+          obstructing the movement area.
+        </li>
+      </ul>
+      <p>
+        If you have a health condition, are pregnant or postpartum, are
+        returning after surgery or a long break, take medication that affects
+        exercise response, or have symptoms you do not understand, consult an
+        appropriately qualified clinician before relying on a general workout.
+      </p>
+    </section>
+
+    <section aria-labelledby="during-heading">
+      <h2 id="during-heading">During a session</h2>
+      <div class="grid-cards">
+        <article class="card card-pad">
+          <h3>Control before quantity</h3>
+          <p>
+            Use a range and pace you can control. Fewer repetitions, a shorter
+            interval, more rest, or an easier variation are all valid
+            adjustments.
+          </p>
+        </article>
+        <article class="card card-pad">
+          <h3>Keep margin in the set</h3>
+          <p>
+            General sessions do not require training to failure. End a set
+            before fatigue prevents a stable setup or deliberate repetition.
+          </p>
+        </article>
+        <article class="card card-pad">
+          <h3>Respect the chosen constraint</h3>
+          <p>
+            If an exercise conflicts with available equipment, floor access,
+            noise, impact, space, or a movement you selected to avoid, replace
+            it or stop rather than ignoring the conflict.
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <section aria-labelledby="starting-heading">
+      <h2 id="starting-heading">Start smaller when appropriate</h2>
+      <p>
+        The <a href={CITATIONS.whoActivity.url}>World Health Organization</a> says
+        all physical activity counts and any amount is better than none. Its guidelines
+        are broad public-health guidance, not a personal clearance or demand that
+        a beginner immediately complete a large weekly target. A shorter workout,
+        fewer rounds, lighter resistance, or an easy walk can be a reasonable starting
+        amount when appropriate for the individual.
+      </p>
+      <p>
+        Increase one variable at a time—such as repetitions, range, load, pace,
+        or rounds—and leave enough recovery to repeat the movement with control.
+        WorkoutMatch does not manage recovery, weekly volume, or long-term
+        progression for you.
+      </p>
+    </section>
+
+    <section aria-labelledby="not-rehab-heading">
+      <h2 id="not-rehab-heading">Preference filters are not rehabilitation</h2>
+      <p>
+        Generator options such as avoiding wrist loading, deep knee flexion,
+        overhead work, higher lower-back loading, or frequent floor transitions
+        conservatively remove exercise characteristics. They do not identify a
+        cause, establish a contraindication, or prescribe treatment. Do not use
+        the generator to test an injury or work around professional
+        restrictions.
+      </p>
+      <p>
+        For source context and generator rules, read the <a href="/methodology/"
+          >methodology</a
+        >. When a general session is suitable, you can <a href="/generate/"
+          >build a workout</a
+        > or choose a
+        <a href="/workouts/">curated example</a> after reading its limitations.
+      </p>
+    </section>
+  </article>
+
+  <div class="narrow section-sm">
+    <FaqList items={faqs} heading="Safety questions" />
+  </div>
+</BaseLayout>
+
+<style>
+  .safety-content > section + section {
+    margin-top: clamp(2.75rem, 6vw, 4.5rem);
+  }
+
+  .safety-content p,
+  .safety-content li,
+  .safety-content article p {
+    color: var(--color-ink-muted);
+  }
+
+  .safety-content li + li {
+    margin-top: 0.55rem;
+  }
+
+  .safety-content .callout h2 {
+    font-size: clamp(1.5rem, 3vw, 2rem);
+  }
+
+  .safety-content .callout p:last-child,
+  .safety-content article p:last-child {
+    margin-bottom: 0;
+  }
+</style>

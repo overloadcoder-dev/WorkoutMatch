@@ -1,0 +1,686 @@
+---
+import Breadcrumbs from '../../components/layout/Breadcrumbs.astro';
+import {
+  curatedWorkouts,
+  type CuratedWorkout,
+} from '../../data/curated-workouts';
+import { EXERCISE_BY_ID, EXERCISES } from '../../data/exercises';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import type { Exercise, Prescription } from '../../types/exercise';
+
+export function getStaticPaths() {
+  return EXERCISES.map((exercise) => ({
+    params: { slug: exercise.slug },
+    props: { exercise },
+  }));
+}
+
+type Props = { exercise: Exercise };
+
+const { exercise } = Astro.props;
+
+const LABELS: Readonly<Record<string, string>> = {
+  none: 'No equipment',
+  'one-dumbbell': 'One dumbbell',
+  'two-dumbbells': 'Two dumbbells',
+  'resistance-band': 'Resistance band',
+  'chair-or-bench': 'Chair or bench',
+  'pull-up-bar': 'Pull-up bar',
+  'very-small': 'Very small',
+  'knee-dominant': 'Knee dominant',
+  'hip-dominant': 'Hip dominant',
+  'upper-back': 'Upper back',
+  'lower-back': 'Lower back',
+  'hip-flexors': 'Hip flexors',
+  'full-body': 'Full body',
+};
+
+const labelFor = (value: string): string =>
+  LABELS[value] ??
+  value
+    .split('-')
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ');
+
+const impactLabel = (value: Exercise['impact']): string =>
+  value === 'none' ? 'None' : labelFor(value);
+
+const resolveExerciseIds = (ids: readonly string[]): Exercise[] =>
+  ids
+    .map((id) => EXERCISE_BY_ID.get(id))
+    .filter((item): item is Exercise => item !== undefined);
+
+const easierVariations = resolveExerciseIds(exercise.easierVariationIds);
+const harderVariations = resolveExerciseIds(exercise.harderVariationIds);
+const replacements = resolveExerciseIds(exercise.replacementIds);
+
+const formatPrescription = (prescription: Prescription): string => {
+  if (prescription.mode === 'reps') {
+    return `${prescription.sets} sets of ${prescription.reps.min}–${prescription.reps.max} repetitions, with ${prescription.restSeconds} seconds of rest`;
+  }
+  if (prescription.mode === 'time') {
+    return `${prescription.sets} sets of ${prescription.workSeconds} seconds, with ${prescription.restSeconds} seconds of rest`;
+  }
+  return `${prescription.sets} sets of ${prescription.distanceMeters} metres, with ${prescription.restSeconds} seconds of rest`;
+};
+
+const normalizedNames = new Set(
+  [exercise.name, ...exercise.aliases].map((name) =>
+    name.trim().toLocaleLowerCase('en'),
+  ),
+);
+
+const workoutMoveNames = (workout: CuratedWorkout): string[] => [
+  ...workout.warmup.map((move) => move.name),
+  ...workout.blocks.flatMap((block) => block.moves.map((move) => move.name)),
+  ...workout.cooldown.map((move) => move.name),
+];
+
+const preferredWorkoutByEquipment: Readonly<Record<string, string>> = {
+  none: 'no-equipment',
+  'one-dumbbell': 'one-dumbbell',
+  'two-dumbbells': 'two-dumbbells',
+  'resistance-band': 'resistance-band',
+};
+
+const scoreWorkout = (workout: CuratedWorkout): number => {
+  let score = workoutMoveNames(workout).some((name) =>
+    normalizedNames.has(name.trim().toLocaleLowerCase('en')),
+  )
+    ? 100
+    : 0;
+
+  exercise.equipment.forEach((item) => {
+    if (preferredWorkoutByEquipment[item] === workout.slug) score += 20;
+  });
+  if (exercise.position === 'standing' && workout.slug === 'standing-only')
+    score += 8;
+  if (exercise.noise === 'quiet' && workout.slug === 'quiet-apartment')
+    score += 5;
+  if (
+    (exercise.impact === 'none' || exercise.impact === 'low') &&
+    workout.slug === 'no-jumping'
+  ) {
+    score += 4;
+  }
+  if (workout.slug === '15-minute') score += 1;
+  return score;
+};
+
+const relatedWorkouts = curatedWorkouts
+  .map((workout, index) => ({ workout, index, score: scoreWorkout(workout) }))
+  .sort((left, right) => right.score - left.score || left.index - right.index)
+  .slice(0, 3)
+  .map(({ workout }) => workout);
+
+const poster = exercise.media?.poster;
+const hasVideo = Boolean(exercise.media?.webm || exercise.media?.mp4);
+const hasPosterOnly = Boolean(poster && !hasVideo);
+---
+
+<BaseLayout
+  title={`${exercise.name}: instructions, muscles, and variations`}
+  description={`Learn how to do ${exercise.name}, with numbered instructions, muscles used, breathing cues, safety notes, common mistakes, and linked variations.`}
+  path={`/exercises/${exercise.slug}/`}
+>
+  <div class="container">
+    <Breadcrumbs
+      items={[
+        { label: 'Home', href: '/' },
+        { label: 'Exercises', href: '/exercises/' },
+        { label: exercise.name },
+      ]}
+    />
+  </div>
+
+  <article>
+    <header class="container exercise-hero section-sm">
+      <div>
+        <p class="eyebrow">{labelFor(exercise.movementPattern)} exercise</p>
+        <h1>{exercise.name}</h1>
+        <p class="lede">{exercise.summary}</p>
+        {
+          exercise.aliases.length > 0 && (
+            <p class="aliases">
+              <strong>Also called:</strong> {exercise.aliases.join(', ')}
+            </p>
+          )
+        }
+        <div class="button-row no-print">
+          <a class="button" href="/generate/">Build a matched workout</a>
+          <a class="button button-secondary" href="/exercises/"
+            >Back to all exercises</a
+          >
+        </div>
+      </div>
+
+      <aside
+        class="card card-pad quick-facts"
+        aria-labelledby="quick-facts-heading"
+      >
+        <h2 id="quick-facts-heading">Quick facts</h2>
+        <dl>
+          <div><dt>Difficulty</dt><dd>{labelFor(exercise.difficulty)}</dd></div>
+          <div>
+            <dt>Equipment</dt><dd>
+              {exercise.equipment.map(labelFor).join(', ')}
+            </dd>
+          </div>
+          <div><dt>Position</dt><dd>{labelFor(exercise.position)}</dd></div>
+          <div><dt>Impact</dt><dd>{impactLabel(exercise.impact)}</dd></div>
+        </dl>
+      </aside>
+    </header>
+
+    {
+      hasVideo && exercise.media && (
+        <figure class="container exercise-media">
+          <video
+            controls
+            preload="metadata"
+            poster={poster}
+            aria-label={`${exercise.name} demonstration`}
+          >
+            {exercise.media.webm && (
+              <source src={exercise.media.webm} type="video/webm" />
+            )}
+            {exercise.media.mp4 && (
+              <source src={exercise.media.mp4} type="video/mp4" />
+            )}
+            Your browser cannot play this demonstration video.
+          </video>
+          {exercise.media.attribution && (
+            <figcaption>{exercise.media.attribution}</figcaption>
+          )}
+        </figure>
+      )
+    }
+    {
+      hasPosterOnly && poster && (
+        <figure class="container exercise-media">
+          <img
+            src={poster}
+            alt={`${exercise.name} demonstration`}
+            loading="lazy"
+            decoding="async"
+          />
+          {exercise.media?.attribution && (
+            <figcaption>{exercise.media.attribution}</figcaption>
+          )}
+        </figure>
+      )
+    }
+
+    <section
+      class="container section-sm overview"
+      aria-labelledby="overview-heading"
+    >
+      <div>
+        <p class="eyebrow">Movement profile</p>
+        <h2 id="overview-heading">Overview</h2>
+        <dl class="overview-grid">
+          <div>
+            <dt>Equipment</dt><dd>
+              {exercise.equipment.map(labelFor).join(', ')}
+            </dd>
+          </div>
+          <div><dt>Difficulty</dt><dd>{labelFor(exercise.difficulty)}</dd></div>
+          <div>
+            <dt>Movement pattern</dt><dd>
+              {labelFor(exercise.movementPattern)}
+            </dd>
+          </div>
+          <div>
+            <dt>Body position</dt><dd>{labelFor(exercise.position)}</dd>
+          </div>
+          <div><dt>Impact</dt><dd>{impactLabel(exercise.impact)}</dd></div>
+          <div><dt>Noise</dt><dd>{labelFor(exercise.noise)}</dd></div>
+          <div><dt>Space</dt><dd>{labelFor(exercise.space)}</dd></div>
+          <div>
+            <dt>Movement</dt><dd>
+              {
+                exercise.unilateral
+                  ? 'One side at a time'
+                  : 'Both sides together'
+              }
+            </dd>
+          </div>
+        </dl>
+      </div>
+
+      <aside class="card card-pad muscles" aria-labelledby="muscles-heading">
+        <h2 id="muscles-heading">Muscles used</h2>
+        <h3>Primary</h3>
+        <ul class="tag-list">
+          {
+            exercise.primaryMuscles.map((muscle) => (
+              <li class="tag">{labelFor(muscle)}</li>
+            ))
+          }
+        </ul>
+        <h3>Secondary</h3>
+        <ul class="tag-list">
+          {
+            exercise.secondaryMuscles.map((muscle) => (
+              <li class="tag">{labelFor(muscle)}</li>
+            ))
+          }
+        </ul>
+      </aside>
+    </section>
+
+    <section
+      class="instruction-band section-sm"
+      aria-labelledby="instructions-heading"
+    >
+      <div class="narrow">
+        <p class="eyebrow">Step by step</p>
+        <h2 id="instructions-heading">How to do {exercise.name}</h2>
+        <ol class="instructions">
+          {exercise.instructions.map((instruction) => <li>{instruction}</li>)}
+        </ol>
+      </div>
+    </section>
+
+    <div class="container section-sm guidance-grid">
+      <section class="card card-pad" aria-labelledby="breathing-heading">
+        <h2 id="breathing-heading">Breathing</h2>
+        <ul>
+          {exercise.breathing.map((cue) => <li>{cue}</li>)}
+        </ul>
+      </section>
+      <section class="card card-pad" aria-labelledby="mistakes-heading">
+        <h2 id="mistakes-heading">Common mistakes</h2>
+        <ul>
+          {exercise.commonMistakes.map((mistake) => <li>{mistake}</li>)}
+        </ul>
+      </section>
+    </div>
+
+    <section
+      class="narrow safety-section section-sm"
+      aria-labelledby="safety-heading"
+    >
+      <div class="callout">
+        <p class="eyebrow">Move deliberately</p>
+        <h2 id="safety-heading">Safety notes</h2>
+        <ul>
+          {exercise.safetyNotes.map((note) => <li>{note}</li>)}
+        </ul>
+        <p>
+          Stop if this movement causes pain, dizziness, or another concerning
+          symptom. WorkoutMatch does not diagnose or rehabilitate injuries. Read
+          the <a href="/safety/">general workout safety guidance</a>.
+        </p>
+      </div>
+    </section>
+
+    <section
+      class="container section-sm"
+      aria-labelledby="starting-ranges-heading"
+    >
+      <p class="eyebrow">Adjustable examples</p>
+      <h2 id="starting-ranges-heading">Starting ranges</h2>
+      <p class="muted range-intro">
+        These are general programming starting points, not individualized
+        prescriptions. Use less work or more rest whenever that keeps the
+        movement controlled.
+      </p>
+      <dl class="range-grid">
+        {
+          (['beginner', 'intermediate', 'advanced'] as const).map((level) => (
+            <div class="card card-pad">
+              <dt>{labelFor(level)}</dt>
+              <dd>{formatPrescription(exercise.defaultPrescription[level])}</dd>
+            </div>
+          ))
+        }
+      </dl>
+    </section>
+
+    <section
+      class="relations-band section-sm"
+      aria-labelledby="variations-heading"
+    >
+      <div class="container">
+        <p class="eyebrow">Keep the movement adaptable</p>
+        <h2 id="variations-heading">Variations and replacements</h2>
+        <div class="relation-grid">
+          <section class="card card-pad" aria-labelledby="easier-heading">
+            <h3 id="easier-heading">Easier variations</h3>
+            {
+              easierVariations.length > 0 ? (
+                <ul>
+                  {easierVariations.map((item) => (
+                    <li data-exercise-id={item.id}>
+                      <a href={`/exercises/${item.slug}/`}>{item.name}</a>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p class="muted">
+                  No easier variation is currently catalogued for this exercise.
+                </p>
+              )
+            }
+          </section>
+          <section class="card card-pad" aria-labelledby="harder-heading">
+            <h3 id="harder-heading">Harder variations</h3>
+            {
+              harderVariations.length > 0 ? (
+                <ul>
+                  {harderVariations.map((item) => (
+                    <li data-exercise-id={item.id}>
+                      <a href={`/exercises/${item.slug}/`}>{item.name}</a>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p class="muted">
+                  No harder variation is currently catalogued for this exercise.
+                </p>
+              )
+            }
+          </section>
+          <section class="card card-pad" aria-labelledby="replacements-heading">
+            <h3 id="replacements-heading">Compatible replacements</h3>
+            {
+              replacements.length > 0 ? (
+                <ul>
+                  {replacements.map((item) => (
+                    <li data-exercise-id={item.id}>
+                      <a href={`/exercises/${item.slug}/`}>{item.name}</a>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p class="muted">
+                  No direct replacement is currently catalogued for this
+                  exercise.
+                </p>
+              )
+            }
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <section
+      class="container section-sm"
+      aria-labelledby="related-workouts-heading"
+    >
+      <p class="eyebrow">Put it in context</p>
+      <h2 id="related-workouts-heading">Related curated workouts</h2>
+      <div class="grid-cards">
+        {
+          relatedWorkouts.map((workout) => (
+            <article class="card card-pad related-workout">
+              <h3>
+                <a href={`/workouts/${workout.slug}/`}>{workout.title}</a>
+              </h3>
+              <p class="muted">{workout.summary}</p>
+              <p>
+                <a href={`/workouts/${workout.slug}/`}>
+                  View the complete session
+                </a>
+              </p>
+            </article>
+          ))
+        }
+      </div>
+      <p class="directory-link">
+        <a href="/workouts/">Browse all curated workouts</a>
+      </p>
+    </section>
+
+    <section
+      class="narrow section-sm sources"
+      aria-labelledby="sources-heading"
+    >
+      <h2 id="sources-heading">Editorial references</h2>
+      <ul>
+        {
+          exercise.sources.map((source) => (
+            <li>
+              <a href={source.url} rel="noreferrer">
+                {source.title}
+              </a>
+              , {source.publisher}. Accessed {source.accessedOn}.
+            </li>
+          ))
+        }
+      </ul>
+      <p class="muted">
+        References inform the editorial library; they are not a claim of
+        individual medical or professional review.
+      </p>
+    </section>
+  </article>
+</BaseLayout>
+
+<style>
+  .exercise-hero,
+  .overview,
+  .guidance-grid {
+    display: grid;
+    gap: clamp(1.25rem, 4vw, 3rem);
+  }
+
+  .exercise-hero > div:first-child {
+    align-self: center;
+  }
+
+  .aliases {
+    color: var(--color-ink-muted);
+  }
+
+  .quick-facts {
+    align-self: start;
+  }
+
+  .quick-facts h2,
+  .muscles h2,
+  .guidance-grid h2 {
+    font-size: clamp(1.45rem, 3vw, 2rem);
+  }
+
+  .quick-facts dl,
+  .overview-grid,
+  .range-grid {
+    margin: 0;
+  }
+
+  .quick-facts dl {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  dt {
+    color: var(--color-ink-muted);
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+  }
+
+  dd {
+    margin: 0.15rem 0 0;
+    font-weight: 700;
+  }
+
+  .exercise-media {
+    margin-block: 0 1rem;
+  }
+
+  .exercise-media video,
+  .exercise-media img {
+    display: block;
+    width: min(100%, 54rem);
+    max-height: 38rem;
+    margin-inline: auto;
+    border: 1px solid var(--color-border);
+    border-radius: 1.25rem;
+    background: var(--color-surface);
+    object-fit: contain;
+  }
+
+  .exercise-media figcaption {
+    width: min(100%, 54rem);
+    margin: 0.5rem auto 0;
+    color: var(--color-ink-muted);
+    font-size: 0.9rem;
+  }
+
+  .overview {
+    align-items: start;
+  }
+
+  .overview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr));
+    gap: 1rem;
+  }
+
+  .overview-grid div {
+    border-top: 1px solid var(--color-border);
+    padding-top: 0.75rem;
+  }
+
+  .muscles h3 {
+    margin-top: 1.4rem;
+    font-size: 1rem;
+  }
+
+  .instruction-band,
+  .relations-band {
+    border-block: 1px solid var(--color-border);
+    background: color-mix(
+      in srgb,
+      var(--color-primary-soft) 50%,
+      var(--color-canvas)
+    );
+  }
+
+  .instructions {
+    display: grid;
+    gap: 1rem;
+    margin: 1.5rem 0 0;
+    padding: 0;
+    counter-reset: instruction;
+    list-style: none;
+  }
+
+  .instructions li {
+    position: relative;
+    min-height: 3rem;
+    padding: 0.75rem 0 0.75rem 3.5rem;
+    color: var(--color-ink-muted);
+    counter-increment: instruction;
+  }
+
+  .instructions li::before {
+    position: absolute;
+    top: 0.45rem;
+    left: 0;
+    display: grid;
+    width: 2.5rem;
+    height: 2.5rem;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--color-primary);
+    color: #fff;
+    content: counter(instruction);
+    font-weight: 850;
+  }
+
+  .guidance-grid {
+    align-items: stretch;
+  }
+
+  .guidance-grid ul,
+  .safety-section ul,
+  .relation-grid ul,
+  .sources ul {
+    margin-bottom: 0;
+    padding-left: 1.2rem;
+  }
+
+  .guidance-grid li + li,
+  .safety-section li + li,
+  .relation-grid li + li {
+    margin-top: 0.55rem;
+  }
+
+  .guidance-grid li,
+  .safety-section li,
+  .sources li {
+    color: var(--color-ink-muted);
+  }
+
+  .safety-section .callout {
+    border-inline-start-color: var(--color-accent);
+  }
+
+  .safety-section h2 {
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
+  }
+
+  .range-intro {
+    max-width: 48rem;
+  }
+
+  .range-grid,
+  .relation-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+    gap: 1rem;
+  }
+
+  .range-grid dd {
+    margin-top: 0.5rem;
+    color: var(--color-ink-muted);
+    font-weight: 500;
+  }
+
+  .relation-grid section {
+    box-shadow: none;
+  }
+
+  .related-workout {
+    display: grid;
+    align-content: start;
+  }
+
+  .related-workout p:last-child,
+  .directory-link {
+    margin-bottom: 0;
+  }
+
+  .directory-link {
+    margin-top: 1.4rem;
+    font-weight: 750;
+  }
+
+  .sources h2 {
+    font-size: clamp(1.45rem, 3vw, 2rem);
+  }
+
+  .sources {
+    border-top: 1px solid var(--color-border);
+  }
+
+  @media (min-width: 48rem) {
+    .exercise-hero {
+      grid-template-columns: minmax(0, 1.5fr) minmax(18rem, 0.65fr);
+    }
+
+    .overview {
+      grid-template-columns: minmax(0, 1.4fr) minmax(17rem, 0.6fr);
+    }
+
+    .guidance-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+</style>

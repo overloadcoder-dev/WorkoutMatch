@@ -1,0 +1,339 @@
+<section class="timer-card card" aria-labelledby="interval-timer-heading">
+  <form id="interval-settings" class="timer-settings card-pad" novalidate>
+    <h2 id="interval-timer-heading">Set your intervals</h2>
+    <div class="timer-fields">
+      <div class="field">
+        <label for="work-seconds">Work seconds</label>
+        <input
+          id="work-seconds"
+          name="workSeconds"
+          type="number"
+          min="5"
+          max="3600"
+          step="1"
+          value="40"
+          inputmode="numeric"
+        />
+      </div>
+      <div class="field">
+        <label for="rest-seconds">Rest seconds</label>
+        <input
+          id="rest-seconds"
+          name="restSeconds"
+          type="number"
+          min="0"
+          max="3600"
+          step="1"
+          value="20"
+          inputmode="numeric"
+        />
+      </div>
+      <div class="field">
+        <label for="rounds">Rounds</label>
+        <input
+          id="rounds"
+          name="rounds"
+          type="number"
+          min="1"
+          max="100"
+          step="1"
+          value="8"
+          inputmode="numeric"
+        />
+      </div>
+    </div>
+    <p id="timer-error" class="error-text" role="alert"></p>
+    <button class="button" type="submit">Load timer</button>
+  </form>
+
+  <div id="timer-player" class="timer-player" hidden>
+    <p class="eyebrow" data-phase>Ready</p>
+    <output class="timer-display" aria-label="Time remaining"
+      ><span data-time>00:40</span></output
+    >
+    <p>
+      Round <strong data-current-round>1</strong> of <strong data-total-rounds
+        >8</strong
+      >
+    </p>
+    <progress data-progress max="8" value="0">0 of 8 rounds</progress>
+    <p
+      class="visually-hidden"
+      aria-live="polite"
+      aria-atomic="true"
+      data-announcement
+    >
+    </p>
+    <div class="timer-controls no-print">
+      <button class="button" type="button" data-start>Start</button>
+      <button class="button button-secondary" type="button" data-skip
+        >Skip interval</button
+      >
+      <button
+        class="button button-secondary"
+        type="button"
+        data-mute
+        aria-pressed="false">Mute cues</button
+      >
+      <button class="button button-secondary" type="button" data-reset
+        >Reset</button
+      >
+    </div>
+    <p class="status" data-status role="status">
+      Timer ready. Audio cues begin only after Start.
+    </p>
+  </div>
+</section>
+
+<script>
+  const form = document.querySelector<HTMLFormElement>('#interval-settings');
+  const player = document.querySelector<HTMLElement>('#timer-player');
+  if (form && player) {
+    const nodes = {
+      phase: player.querySelector<HTMLElement>('[data-phase]'),
+      time: player.querySelector<HTMLElement>('[data-time]'),
+      round: player.querySelector<HTMLElement>('[data-current-round]'),
+      rounds: player.querySelector<HTMLElement>('[data-total-rounds]'),
+      progress: player.querySelector<HTMLProgressElement>('[data-progress]'),
+      announce: player.querySelector<HTMLElement>('[data-announcement]'),
+      start: player.querySelector<HTMLButtonElement>('[data-start]'),
+      skip: player.querySelector<HTMLButtonElement>('[data-skip]'),
+      mute: player.querySelector<HTMLButtonElement>('[data-mute]'),
+      reset: player.querySelector<HTMLButtonElement>('[data-reset]'),
+      status: player.querySelector<HTMLElement>('[data-status]'),
+    };
+    let config = { work: 40, rest: 20, rounds: 8 };
+    let phase: 'ready' | 'work' | 'rest' | 'complete' = 'ready';
+    let round = 1;
+    let remaining = config.work;
+    let running = false;
+    let timerId: number | null = null;
+    let lastTick = 0;
+    let muted = false;
+    let audioContext: AudioContext | null = null;
+
+    const format = (seconds: number) =>
+      `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`;
+    const label = () =>
+      phase === 'ready'
+        ? 'Ready'
+        : phase === 'work'
+          ? 'Work'
+          : phase === 'rest'
+            ? 'Rest'
+            : 'Complete';
+    const render = () => {
+      if (nodes.phase) nodes.phase.textContent = label();
+      if (nodes.time) nodes.time.textContent = format(remaining);
+      if (nodes.round) nodes.round.textContent = String(round);
+      if (nodes.rounds) nodes.rounds.textContent = String(config.rounds);
+      if (nodes.progress) {
+        nodes.progress.max = config.rounds;
+        nodes.progress.value = phase === 'complete' ? config.rounds : round - 1;
+        nodes.progress.textContent = `${nodes.progress.value} of ${config.rounds} rounds`;
+      }
+      if (nodes.start)
+        nodes.start.textContent = running
+          ? 'Pause'
+          : phase === 'ready'
+            ? 'Start'
+            : phase === 'complete'
+              ? 'Restart'
+              : 'Resume';
+    };
+
+    const cue = (frequency = 660) => {
+      if (muted) return;
+      try {
+        audioContext ??= new AudioContext();
+        const oscillator = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        oscillator.frequency.value = frequency;
+        gain.gain.setValueAtTime(0.08, audioContext.currentTime);
+        gain.gain.exponentialRampToValueAtTime(
+          0.001,
+          audioContext.currentTime + 0.12,
+        );
+        oscillator.connect(gain).connect(audioContext.destination);
+        oscillator.start();
+        oscillator.stop(audioContext.currentTime + 0.13);
+      } catch {
+        if (nodes.status)
+          nodes.status.textContent =
+            'Audio cues are unavailable; the visual timer still works.';
+      }
+    };
+
+    const announcePhase = () => {
+      if (nodes.announce)
+        nodes.announce.textContent =
+          phase === 'complete'
+            ? 'Timer complete.'
+            : `${label()} interval. Round ${round} of ${config.rounds}.`;
+    };
+
+    const stopLoop = () => {
+      if (timerId !== null) window.clearInterval(timerId);
+      timerId = null;
+    };
+
+    const advance = () => {
+      if (phase === 'ready') {
+        phase = 'work';
+        remaining = config.work;
+      } else if (phase === 'work' && config.rest > 0) {
+        phase = 'rest';
+        remaining = config.rest;
+      } else if (round < config.rounds) {
+        round += 1;
+        phase = 'work';
+        remaining = config.work;
+      } else {
+        phase = 'complete';
+        remaining = 0;
+        running = false;
+        stopLoop();
+      }
+      cue(phase === 'work' ? 760 : phase === 'complete' ? 920 : 540);
+      if ('vibrate' in navigator && !muted)
+        navigator.vibrate(phase === 'complete' ? [120, 70, 120] : 80);
+      announcePhase();
+      render();
+    };
+
+    const tick = () => {
+      const now = performance.now();
+      if (now - lastTick < 850) return;
+      lastTick = now;
+      remaining = Math.max(0, remaining - 1);
+      if (remaining <= 3 && remaining > 0) {
+        cue(700);
+        if (nodes.announce) nodes.announce.textContent = `${remaining}`;
+      }
+      if (remaining === 0) advance();
+      else render();
+    };
+
+    const startLoop = () => {
+      stopLoop();
+      lastTick = performance.now();
+      timerId = window.setInterval(tick, 250);
+    };
+
+    const reset = () => {
+      running = false;
+      stopLoop();
+      phase = 'ready';
+      round = 1;
+      remaining = config.work;
+      if (nodes.status) nodes.status.textContent = 'Timer reset and ready.';
+      render();
+    };
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const data = new FormData(form);
+      const work = Number(data.get('workSeconds'));
+      const rest = Number(data.get('restSeconds'));
+      const rounds = Number(data.get('rounds'));
+      const error = form.querySelector<HTMLElement>('#timer-error');
+      if (
+        !Number.isInteger(work) ||
+        work < 5 ||
+        work > 3600 ||
+        !Number.isInteger(rest) ||
+        rest < 0 ||
+        rest > 3600 ||
+        !Number.isInteger(rounds) ||
+        rounds < 1 ||
+        rounds > 100
+      ) {
+        if (error)
+          error.textContent =
+            'Use 5–3,600 work seconds, 0–3,600 rest seconds, and 1–100 rounds.';
+        return;
+      }
+      if (error) error.textContent = '';
+      config = { work, rest, rounds };
+      player.hidden = false;
+      reset();
+      nodes.start?.focus();
+    });
+
+    nodes.start?.addEventListener('click', () => {
+      if (phase === 'complete') reset();
+      if (phase === 'ready') advance();
+      running = !running;
+      if (running) {
+        void audioContext?.resume();
+        startLoop();
+        if (nodes.status) nodes.status.textContent = 'Timer running.';
+      } else {
+        stopLoop();
+        if (nodes.status) nodes.status.textContent = 'Timer paused.';
+      }
+      render();
+    });
+    nodes.skip?.addEventListener('click', advance);
+    nodes.reset?.addEventListener('click', reset);
+    nodes.mute?.addEventListener('click', () => {
+      muted = !muted;
+      nodes.mute?.setAttribute('aria-pressed', String(muted));
+      if (nodes.mute)
+        nodes.mute.textContent = muted ? 'Unmute cues' : 'Mute cues';
+    });
+    window.addEventListener(
+      'pagehide',
+      () => {
+        stopLoop();
+        void audioContext?.close();
+      },
+      { once: true },
+    );
+    render();
+  }
+</script>
+
+<style>
+  .timer-card {
+    overflow: clip;
+  }
+  .timer-fields {
+    display: grid;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+  .timer-player {
+    padding: clamp(1.25rem, 5vw, 3rem);
+    background: var(--color-primary-soft);
+    text-align: center;
+  }
+  .timer-display {
+    display: block;
+    font-family: ui-monospace, 'Cascadia Mono', monospace;
+    font-size: clamp(4rem, 20vw, 9rem);
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.08em;
+  }
+  progress {
+    width: min(30rem, 100%);
+    height: 1rem;
+    accent-color: var(--color-primary);
+  }
+  .timer-controls {
+    position: sticky;
+    bottom: 0;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.65rem;
+    margin-top: 1.5rem;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  @media (min-width: 38rem) {
+    .timer-fields {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+</style>

@@ -1,0 +1,75 @@
+---
+import Breadcrumbs from '../../components/layout/Breadcrumbs.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const calculators = [
+  {
+    href: '/calculators/bmi/',
+    name: 'Adult BMI',
+    copy: 'A screening measure based on height and weight, with CDC adult categories and clear limitations.',
+  },
+  {
+    href: '/calculators/bmr/',
+    name: 'BMR estimate',
+    copy: 'The Mifflin–St Jeor resting energy equations, including an option to view both published coefficients.',
+  },
+  {
+    href: '/calculators/tdee/',
+    name: 'TDEE estimate',
+    copy: 'A resting estimate multiplied by a documented activity factor, with a transparent uncertainty range.',
+  },
+];
+---
+
+<BaseLayout
+  title="Adult fitness calculators"
+  description="Use privacy-minded adult BMI, BMR, and TDEE calculators with transparent formulas, limitations, and on-device processing."
+  path="/calculators/"
+>
+  <div class="container">
+    <Breadcrumbs
+      items={[{ label: 'Home', href: '/' }, { label: 'Calculators' }]}
+    />
+  </div>
+  <header class="section-sm narrow">
+    <p class="eyebrow">Know the assumptions</p>
+    <h1>Adult fitness calculators</h1>
+    <p class="lede">
+      Simple arithmetic can be useful when its limits stay visible. These tools
+      calculate only after you ask, process entries in your browser, and do not
+      store body measurements or results.
+    </p>
+  </header>
+  <section class="container section-sm" aria-labelledby="choose-calculator">
+    <h2 id="choose-calculator">Choose a calculator</h2>
+    <div class="grid-cards">
+      {
+        calculators.map((calculator) => (
+          <article class="card card-pad">
+            <h3>
+              <a href={calculator.href}>{calculator.name}</a>
+            </h3>
+            <p class="muted">{calculator.copy}</p>
+            <a class="button button-secondary" href={calculator.href}>
+              Open {calculator.name}
+            </a>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+  <section class="narrow section-sm prose">
+    <h2>Privacy by default</h2>
+    <p>
+      Calculator values are not sent by WorkoutMatch application code, added to
+      URLs, or saved in local history. If you explicitly select “remember my
+      units,” only the metric-or-imperial preference is stored on this device.
+      Ordinary requests for the page’s HTML, CSS, and JavaScript still occur.
+    </p>
+    <p>
+      These calculators are for adults aged 20 and older. They are educational
+      estimates, not diagnoses, measurements, prescriptions, or promises of an
+      outcome.
+    </p>
+  </section>
+</BaseLayout>

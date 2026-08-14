@@ -1,0 +1,14 @@
+---
+import GuidedWorkoutPlayer from '../../components/timer/GuidedWorkoutPlayer.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="Guided workout player"
+  description="Run a generated WorkoutMatch session with exercise and rest guidance, keyboard controls, and optional local device enhancements."
+  path="/workout/player/"
+  noindex
+  bodyClass="guided-page"
+>
+  <div class="container section-sm"><GuidedWorkoutPlayer /></div>
+</BaseLayout>

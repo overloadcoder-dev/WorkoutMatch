@@ -1,0 +1,80 @@
+---
+import TdeeCalculator from '../../components/calculators/TdeeCalculator.astro';
+import FaqList from '../../components/content/FaqList.astro';
+import Breadcrumbs from '../../components/layout/Breadcrumbs.astro';
+import { CITATIONS } from '../../data/citations';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const faqs = [
+  {
+    question: 'Is TDEE a calorie prescription?',
+    answer:
+      'No. This result is arithmetic based on a resting estimate and a broad activity factor. It is not a dietary recommendation.',
+  },
+  {
+    question: 'Why show an uncertainty range?',
+    answer:
+      'Activity labels are subjective. The range shows what the same resting estimate would produce with the neighboring categories, where one exists.',
+  },
+  {
+    question: 'Will eating exactly this amount maintain weight?',
+    answer:
+      'Not necessarily. Energy needs and weight change vary, and both the resting equation and activity multiplier are estimates.',
+  },
+];
+---
+
+<BaseLayout
+  title="TDEE calculator with activity range"
+  description="Estimate adult total daily energy expenditure from Mifflin–St Jeor BMR and a documented activity factor, with a transparent neighboring-factor range."
+  path="/calculators/tdee/"
+>
+  <div class="container">
+    <Breadcrumbs
+      items={[
+        { label: 'Home', href: '/' },
+        { label: 'Calculators', href: '/calculators/' },
+        { label: 'TDEE' },
+      ]}
+    />
+  </div>
+  <header class="section-sm narrow">
+    <p class="eyebrow">Resting estimate × activity factor</p>
+    <h1>TDEE calculator with activity range</h1>
+    <p class="lede">
+      See one selected-factor estimate and a transparent range based on
+      neighboring activity levels. Treat every number as an approximation.
+    </p>
+  </header>
+  <div class="container"><TdeeCalculator /></div>
+  <section class="narrow section prose">
+    <h2>Formula and activity factors</h2>
+    <p>
+      <strong
+        >TDEE estimate = Mifflin–St Jeor resting estimate × activity factor.</strong
+      > This tool uses 1.2, 1.375, 1.55, 1.725, and 1.9 for increasing activity categories.
+      The labels are subjective heuristics, not measurements.
+    </p>
+    <p>
+      The “activity uncertainty range” repeats the arithmetic with the
+      neighboring category factors. At the lowest and highest categories, the
+      range stops at the end of the table. It does not quantify all biological
+      uncertainty.
+    </p>
+    <h2>Use cautiously</h2>
+    <p>
+      The optional minus 10%, maintenance, and plus 10% comparison is labeled as
+      arithmetic—not a diet plan. This site does not prescribe calorie intake or
+      guarantee weight change. Seek a qualified clinician or dietitian when
+      health conditions, pregnancy, medication, or eating-disorder concerns may
+      affect energy needs.
+    </p>
+    <p>
+      Resting-equation source: <a href={CITATIONS.mifflinPaper.url}
+        >{CITATIONS.mifflinPaper.title}</a
+      >, {CITATIONS.mifflinPaper.publisher}. The activity factors are a
+      centralized product heuristic and do not come from that paper.
+    </p>
+    <FaqList items={faqs} />
+  </section>
+</BaseLayout>

@@ -1,0 +1,264 @@
+---
+import Breadcrumbs from '../components/layout/Breadcrumbs.astro';
+import FaqList from '../components/content/FaqList.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const faqs = [
+  {
+    question: 'Does the website make network requests?',
+    answer:
+      'Yes. Opening a website normally requests its HTML, styles, scripts, icons, and other assets from a host. The privacy boundary is that WorkoutMatch application code does not send your workout inputs, calculator values, or locally saved history to a server.',
+  },
+  {
+    question: 'Is locally saved data automatically backed up?',
+    answer:
+      'No. Browser data can be cleared, blocked, become unavailable, or stay only on one device and browser profile. Use the explicit JSON export if you want a copy you control.',
+  },
+  {
+    question: 'Can another person using my browser see my progress?',
+    answer:
+      'Potentially, yes. People with access to the same device and browser profile may be able to view locally saved progress or downloaded exports.',
+  },
+];
+---
+
+<BaseLayout
+  title="Privacy: On-Device Workout and Calculator Data"
+  description="Learn which ordinary website requests occur, which WorkoutMatch inputs stay on your device, what is stored locally, and how exports and browser clearing work."
+  path="/privacy/"
+>
+  <div class="container">
+    <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Privacy' }]} />
+  </div>
+
+  <header class="narrow section-sm">
+    <p class="eyebrow">Plain-language data boundaries</p>
+    <h1>Privacy</h1>
+    <p class="lede">
+      The initial WorkoutMatch application has no account, backend, or cloud
+      sync. Workout inputs, calculator values, and locally saved progress are
+      processed on your device and are not sent to a server by application code.
+    </p>
+  </header>
+
+  <article class="narrow privacy-content">
+    <section class="request-grid" aria-labelledby="requests-heading">
+      <h2 id="requests-heading">Website requests and app data are different</h2>
+      <div class="grid-cards">
+        <article class="card card-pad">
+          <p class="eyebrow">Normal asset requests</p>
+          <h3>What loading the site requires</h3>
+          <p>
+            Your browser ordinarily requests page HTML, compiled CSS and
+            JavaScript, icons, and other self-hosted assets. The host and
+            network providers may receive routine request information such as an
+            IP address, date and time, requested path, browser headers, and
+            referrer according to their own infrastructure and policies.
+          </p>
+        </article>
+        <article class="card card-pad">
+          <p class="eyebrow">On-device application data</p>
+          <h3>What the app keeps local</h3>
+          <p>
+            Generator selections, movement preferences, calculator inputs and
+            results, workout records, saved plans, and import contents are
+            handled in the browser. WorkoutMatch application code does not
+            transmit those values to a server, analytics service, ad system, or
+            error reporter.
+          </p>
+        </article>
+      </div>
+      <p class="callout">
+        WorkoutMatch does not claim “zero network requests.” The accurate
+        promise is narrower: personal workout and calculator data are processed
+        on the device and are not transmitted by application code.
+      </p>
+    </section>
+
+    <section aria-labelledby="storage-heading">
+      <h2 id="storage-heading">What can be stored in your browser</h2>
+      <dl class="data-list">
+        <div>
+          <dt>Theme and small preferences</dt>
+          <dd>
+            An explicit light/dark theme override, preferred units, and optional
+            generator defaults can use localStorage.
+          </dd>
+        </div>
+        <div>
+          <dt>Saved workouts and history</dt>
+          <dd>
+            When you choose to save, IndexedDB can hold workout dates,
+            exercises, completion or skip status, sets, repetitions, duration,
+            optional weights, and saved plans.
+          </dd>
+        </div>
+        <div>
+          <dt>Calculator values</dt>
+          <dd>
+            Measurements, age, equation choice, and results are not stored by
+            default. Only an explicit “remember my units” preference may
+            persist.
+          </dd>
+        </div>
+        <div>
+          <dt>Theme before page display</dt>
+          <dd>
+            A small self-hosted script reads the saved theme choice early so the
+            page does not flash the wrong theme.
+          </dd>
+        </div>
+      </dl>
+      <p>
+        Local storage is not private from everyone who can use the same browser
+        profile. It can also be blocked, cleared automatically, removed by you,
+        or lost when a device fails. No automatic backup or cross-device
+        synchronization is provided.
+      </p>
+    </section>
+
+    <section aria-labelledby="urls-heading">
+      <h2 id="urls-heading">URLs, sharing, and printouts</h2>
+      <p>
+        Privacy-safe workout sharing may encode an allowlisted, non-sensitive
+        generator configuration and versioned seed in a URL. It must not include
+        movement sensitivities, calculator inputs or results, local workout
+        records, notes, filenames, or imported data. Review a link before
+        sending it because anyone who receives a URL can copy or retain it.
+      </p>
+      <p>
+        Printing or saving a printout moves information outside WorkoutMatch
+        storage controls. Shared devices, browser print history, downloaded
+        PDFs, and physical pages should be handled according to your own privacy
+        needs.
+      </p>
+    </section>
+
+    <section aria-labelledby="exports-heading">
+      <h2 id="exports-heading">Export, import, and clear controls</h2>
+      <ul>
+        <li>
+          Export creates a JSON file from local saved plans, progress, and
+          preferences only when you request it.
+        </li>
+        <li>
+          That downloaded file is no longer protected by browser storage. Anyone
+          with file access may be able to read it.
+        </li>
+        <li>
+          Import reads a selected file on the device, validates its structure
+          and size, and shows a preview before merge or replacement.
+        </li>
+        <li>
+          Replacing or clearing local data requires confirmation because the app
+          cannot restore information that was not exported.
+        </li>
+      </ul>
+      <p>
+        <a href="/my-progress/">Open My progress</a> to manage browser-stored workout
+        data.
+      </p>
+    </section>
+
+    <section aria-labelledby="third-parties-heading">
+      <h2 id="third-parties-heading">Third parties and future changes</h2>
+      <p>
+        The initial application does not load analytics, an ad network, social
+        embeds, or third-party fonts. Advertisement layout zones are disabled
+        and do not show fake ads. If analytics, advertising, crash reporting, or
+        another third party is enabled later, it requires a deliberate privacy,
+        consent, security, and performance review. It must not receive generator
+        constraints, movement sensitivities, calculator values, local history,
+        import contents, or free-text notes.
+      </p>
+      <p>
+        A deployment host has its own operational logging and retention
+        practices, which are outside this code’s on-device storage controls.
+        This page should be updated when a real host or approved third party
+        changes those facts.
+      </p>
+    </section>
+
+    <section aria-labelledby="choices-heading">
+      <h2 id="choices-heading">Your practical choices</h2>
+      <ul>
+        <li>Use the generator and calculators without saving results.</li>
+        <li>
+          Decline persistent preferences by leaving theme and unit choices at
+          their defaults.
+        </li>
+        <li>
+          Export a local copy before clearing browser data, if you want to keep
+          it.
+        </li>
+        <li>
+          Use browser or site controls to clear locally saved WorkoutMatch data.
+        </li>
+        <li>
+          Avoid saving on a shared browser profile if other people should not
+          see the records.
+        </li>
+      </ul>
+    </section>
+  </article>
+
+  <div class="narrow section-sm">
+    <FaqList items={faqs} heading="Privacy questions" />
+  </div>
+</BaseLayout>
+
+<style>
+  .privacy-content > section + section {
+    margin-top: clamp(3rem, 7vw, 5rem);
+    border-top: 1px solid var(--color-border);
+    padding-top: clamp(2rem, 5vw, 3.5rem);
+  }
+
+  .privacy-content p,
+  .privacy-content li,
+  .privacy-content dd {
+    color: var(--color-ink-muted);
+  }
+
+  .privacy-content li + li {
+    margin-top: 0.55rem;
+  }
+
+  .request-grid > h2 {
+    margin-bottom: 1.4rem;
+  }
+
+  .request-grid article p:last-child {
+    margin-bottom: 0;
+  }
+
+  .request-grid .callout {
+    margin-top: 1.25rem;
+  }
+
+  .data-list {
+    margin: 1.5rem 0;
+  }
+
+  .data-list div {
+    display: grid;
+    gap: 0.35rem;
+    border-top: 1px solid var(--color-border);
+    padding-block: 1rem;
+  }
+
+  .data-list dt {
+    font-weight: 780;
+  }
+
+  .data-list dd {
+    margin: 0;
+  }
+
+  @media (min-width: 42rem) {
+    .data-list div {
+      grid-template-columns: minmax(10rem, 0.45fr) minmax(0, 1fr);
+      gap: 1.5rem;
+    }
+  }
+</style>

@@ -1,0 +1,1075 @@
+<section class="guided-shell" aria-label="Guided workout">
+  <div id="guided-loading" class="status" role="status">
+    Loading the workout saved for guided mode…
+  </div>
+  <div id="guided-empty" class="card card-pad" hidden>
+    <p class="eyebrow">Nothing queued</p>
+    <h2>Choose a workout first</h2>
+    <p>
+      No valid temporary workout was found in this browser. Generate one, then
+      choose Start guided mode.
+    </p>
+    <a class="button" href="/generate/">Build a workout</a>
+  </div>
+
+  <div id="guided-player" hidden>
+    <header class="player-heading">
+      <div>
+        <p class="eyebrow" data-section-label></p>
+        <h1 data-workout-title>Guided workout</h1>
+      </div>
+      <div class="player-tools no-print">
+        <button
+          class="button button-secondary"
+          type="button"
+          data-fullscreen
+          hidden>Fullscreen</button
+        >
+        <button
+          class="button button-secondary"
+          type="button"
+          data-mute
+          aria-pressed="false">Mute cues</button
+        >
+      </div>
+    </header>
+
+    <div class="progress-row">
+      <p>
+        Step <strong data-step-index>1</strong> of <strong data-step-count
+          >1</strong
+        >
+      </p>
+      <progress data-overall-progress max="1" value="0">0 of 1 steps</progress>
+    </div>
+
+    <article class="active-card card">
+      <div class="phase-panel">
+        <p class="eyebrow" data-phase-label>Ready</p>
+        <output class="phase-time" aria-label="Current interval time"
+          ><span data-phase-time>Ready</span></output
+        >
+        <p data-set-label></p>
+      </div>
+      <div class="exercise-panel">
+        <p class="eyebrow">Current movement</p>
+        <h2 data-exercise-name></h2>
+        <p class="target" data-target></p>
+        <p class="muted" data-exercise-summary></p>
+        <div class="weight-entry" data-weight-entry hidden>
+          <label for="guided-weight">Optional weight used</label>
+          <div class="weight-controls">
+            <input
+              id="guided-weight"
+              data-weight-input
+              type="number"
+              min="0"
+              max="2000"
+              step="0.25"
+              inputmode="decimal"
+              autocomplete="off"
+              placeholder="0"
+            />
+            <select data-weight-unit aria-label="Weight unit">
+              <option value="kg">kg</option>
+              <option value="lb">lb</option>
+            </select>
+          </div>
+          <p class="muted">
+            Enter the weight for one dumbbell when a movement is single-arm.
+            This stays in local progress only if you save completion.
+          </p>
+        </div>
+        <h3>How to do it</h3>
+        <ol data-instructions></ol>
+        <p>
+          <a data-exercise-link href="/exercises/"
+            >View full exercise guidance</a
+          >
+        </p>
+      </div>
+    </article>
+
+    <p
+      class="visually-hidden"
+      aria-live="polite"
+      aria-atomic="true"
+      data-announcement
+    >
+    </p>
+    <p class="status" role="status" data-player-status>
+      Ready. Start when you are set.
+    </p>
+
+    <div class="player-controls no-print">
+      <button class="button button-secondary" type="button" data-previous
+        >Previous</button
+      >
+      <button class="button primary-control" type="button" data-start
+        >Start</button
+      >
+      <button class="button button-secondary" type="button" data-next
+        >Complete &amp; next</button
+      >
+      <button class="button button-secondary" type="button" data-skip
+        >Skip exercise</button
+      >
+      <button class="button button-secondary" type="button" data-replace
+        >Replace</button
+      >
+      <button class="button end-control" type="button" data-end
+        >End workout</button
+      >
+    </div>
+  </div>
+
+  <section
+    id="completion-summary"
+    class="completion card card-pad"
+    tabindex="-1"
+    hidden
+  >
+    <p class="eyebrow">Session summary</p>
+    <h2 data-completion-heading>Workout complete</h2>
+    <p data-completion-copy></p>
+    <div class="button-row no-print">
+      <button class="button" type="button" data-save-completion
+        >Save completion locally</button
+      >
+      <a class="button button-secondary" href="/my-progress/"
+        >View my progress</a
+      >
+      <a class="button button-secondary" href="/quick-workout/">Build another</a
+      >
+    </div>
+    <p class="status" data-save-status role="status" hidden></p>
+  </section>
+</section>
+
+<dialog
+  id="resume-dialog"
+  aria-labelledby="resume-title"
+  aria-describedby="resume-description"
+>
+  <div class="dialog-card">
+    <h2 id="resume-title">Resume this workout?</h2>
+    <p id="resume-description">
+      A paused guided session from this browser was found.
+    </p>
+    <div class="button-row">
+      <button class="button" type="button" data-resume
+        >Resume where I left off</button
+      >
+      <button class="button button-secondary" type="button" data-restart
+        >Start from the beginning</button
+      >
+    </div>
+  </div>
+</dialog>
+
+<dialog
+  id="end-dialog"
+  aria-labelledby="end-title"
+  aria-describedby="end-description"
+>
+  <div class="dialog-card">
+    <h2 id="end-title">End this active workout?</h2>
+    <p id="end-description">
+      You can save an ended-early summary. Unfinished movements will be recorded
+      as skipped.
+    </p>
+    <div class="button-row">
+      <button class="button end-control" type="button" data-confirm-end
+        >End workout</button
+      >
+      <button class="button button-secondary" type="button" data-cancel-end
+        >Keep going</button
+      >
+    </div>
+  </div>
+</dialog>
+
+<script>
+  import { EXERCISE_BY_ID } from '../../data/exercises';
+  import { openWorkoutMatchStorage } from '../../lib/storage';
+  import {
+    replaceExercise,
+    validateGeneratedWorkout,
+  } from '../../lib/generator';
+  import type { CompletedWorkoutRecord } from '../../types/storage';
+  import type {
+    GeneratedWorkout,
+    GeneratedWorkoutExercise,
+  } from '../../types/workout';
+
+  type PlayerStep = {
+    kind: 'work' | 'reps' | 'distance' | 'rest';
+    item: GeneratedWorkoutExercise;
+    setNumber: number;
+    totalSets: number;
+    durationSeconds: number | null;
+  };
+  type SavedSession = {
+    version: 1;
+    workoutId: string;
+    stepIndex: number;
+    remaining: number;
+    elapsed: number;
+    activeSeconds: number;
+    startedAt: string;
+    completedExerciseIds: string[];
+    skippedExerciseIds: string[];
+    hasStarted: boolean;
+    weights: Record<string, { value: number; unit: 'kg' | 'lb' }>;
+  };
+
+  const loading = document.querySelector<HTMLElement>('#guided-loading');
+  const empty = document.querySelector<HTMLElement>('#guided-empty');
+  const player = document.querySelector<HTMLElement>('#guided-player');
+  const completion = document.querySelector<HTMLElement>('#completion-summary');
+  const resumeDialog =
+    document.querySelector<HTMLDialogElement>('#resume-dialog');
+  const endDialog = document.querySelector<HTMLDialogElement>('#end-dialog');
+  let workout: GeneratedWorkout | null = null;
+  let steps: PlayerStep[] = [];
+  let stepIndex = 0;
+  let remaining = 0;
+  let elapsed = 0;
+  let activeSeconds = 0;
+  let startedAt = new Date().toISOString();
+  let running = false;
+  let hasStarted = false;
+  let timerId: number | null = null;
+  let lastTick = 0;
+  let muted = false;
+  let audioContext: AudioContext | null = null;
+  let wakeLock: WakeLockSentinel | null = null;
+  const completedExerciseIds = new Set<string>();
+  const skippedExerciseIds = new Set<string>();
+  const weights = new Map<string, { value: number; unit: 'kg' | 'lb' }>();
+
+  const nodes = player
+    ? {
+        section: player.querySelector<HTMLElement>('[data-section-label]')!,
+        title: player.querySelector<HTMLElement>('[data-workout-title]')!,
+        stepIndex: player.querySelector<HTMLElement>('[data-step-index]')!,
+        stepCount: player.querySelector<HTMLElement>('[data-step-count]')!,
+        progress: player.querySelector<HTMLProgressElement>(
+          '[data-overall-progress]',
+        )!,
+        phase: player.querySelector<HTMLElement>('[data-phase-label]')!,
+        time: player.querySelector<HTMLElement>('[data-phase-time]')!,
+        set: player.querySelector<HTMLElement>('[data-set-label]')!,
+        exercise: player.querySelector<HTMLElement>('[data-exercise-name]')!,
+        target: player.querySelector<HTMLElement>('[data-target]')!,
+        summary: player.querySelector<HTMLElement>('[data-exercise-summary]')!,
+        instructions: player.querySelector<HTMLOListElement>(
+          '[data-instructions]',
+        )!,
+        link: player.querySelector<HTMLAnchorElement>('[data-exercise-link]')!,
+        announcement: player.querySelector<HTMLElement>('[data-announcement]')!,
+        status: player.querySelector<HTMLElement>('[data-player-status]')!,
+        start: player.querySelector<HTMLButtonElement>('[data-start]')!,
+        previous: player.querySelector<HTMLButtonElement>('[data-previous]')!,
+        next: player.querySelector<HTMLButtonElement>('[data-next]')!,
+        skip: player.querySelector<HTMLButtonElement>('[data-skip]')!,
+        replace: player.querySelector<HTMLButtonElement>('[data-replace]')!,
+        end: player.querySelector<HTMLButtonElement>('[data-end]')!,
+        mute: player.querySelector<HTMLButtonElement>('[data-mute]')!,
+        fullscreen:
+          player.querySelector<HTMLButtonElement>('[data-fullscreen]')!,
+        weightEntry: player.querySelector<HTMLElement>('[data-weight-entry]')!,
+        weightInput: player.querySelector<HTMLInputElement>(
+          '[data-weight-input]',
+        )!,
+        weightUnit:
+          player.querySelector<HTMLSelectElement>('[data-weight-unit]')!,
+      }
+    : null;
+
+  const restoreWorkout = (): GeneratedWorkout | null => {
+    try {
+      const raw = localStorage.getItem('wm-guided-workout');
+      if (!raw || raw.length > 750_000) return null;
+      const candidate = JSON.parse(raw) as GeneratedWorkout;
+      if (
+        !candidate ||
+        typeof candidate !== 'object' ||
+        typeof candidate.id !== 'string' ||
+        candidate.id.length > 160 ||
+        !candidate.sections
+      )
+        return null;
+      for (const section of [
+        candidate.sections.warmup,
+        candidate.sections.main,
+        candidate.sections.cooldown,
+      ]) {
+        if (
+          !section ||
+          !Array.isArray(section.exercises) ||
+          section.exercises.length > 50
+        )
+          return null;
+        section.exercises = section.exercises.map((item) => {
+          const exercise = EXERCISE_BY_ID.get(item.exerciseId);
+          if (!exercise)
+            throw new Error('Unknown exercise in temporary workout.');
+          return { ...item, exercise };
+        });
+      }
+      return validateGeneratedWorkout(candidate).length === 0
+        ? candidate
+        : null;
+    } catch {
+      return null;
+    }
+  };
+
+  const buildSteps = (source: GeneratedWorkout): PlayerStep[] => {
+    const items = [
+      source.sections.warmup,
+      source.sections.main,
+      source.sections.cooldown,
+    ].flatMap((section) => section.exercises);
+    const result: PlayerStep[] = [];
+    items.forEach((item, itemIndex) => {
+      const sets = item.target.sets;
+      for (let setNumber = 1; setNumber <= sets; setNumber += 1) {
+        result.push({
+          kind:
+            item.target.mode === 'time'
+              ? 'work'
+              : item.target.mode === 'distance'
+                ? 'distance'
+                : 'reps',
+          item,
+          setNumber,
+          totalSets: sets,
+          durationSeconds:
+            item.target.mode === 'time' ? item.target.workSeconds : null,
+        });
+        if (setNumber < sets && item.target.restSeconds > 0) {
+          result.push({
+            kind: 'rest',
+            item,
+            setNumber,
+            totalSets: sets,
+            durationSeconds: item.target.restSeconds,
+          });
+        }
+      }
+      if (itemIndex < items.length - 1)
+        result.push({
+          kind: 'rest',
+          item,
+          setNumber: sets,
+          totalSets: sets,
+          durationSeconds: 10,
+        });
+    });
+    return result;
+  };
+
+  const current = () => steps[stepIndex];
+  const formatTime = (seconds: number) =>
+    `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`;
+  const targetText = (item: GeneratedWorkoutExercise) => {
+    const side =
+      item.target.sideHandling === 'each-side'
+        ? ' each side'
+        : item.target.sideHandling === 'alternate'
+          ? ' alternating'
+          : '';
+    if (item.target.mode === 'reps') return `${item.target.reps} reps${side}`;
+    if (item.target.mode === 'time')
+      return `${item.target.workSeconds} seconds${side}`;
+    return `${item.target.distanceMeters} metres${side}`;
+  };
+
+  const persist = () => {
+    if (!workout) return;
+    const state: SavedSession = {
+      version: 1,
+      workoutId: workout.id,
+      stepIndex,
+      remaining,
+      elapsed,
+      activeSeconds,
+      startedAt,
+      completedExerciseIds: [...completedExerciseIds],
+      skippedExerciseIds: [...skippedExerciseIds],
+      hasStarted,
+      weights: Object.fromEntries(weights),
+    };
+    try {
+      localStorage.setItem('wm-guided-session', JSON.stringify(state));
+    } catch {
+      /* Recovery is optional. */
+    }
+  };
+
+  const restoreSession = (): SavedSession | null => {
+    try {
+      const raw = localStorage.getItem('wm-guided-session');
+      if (!raw || raw.length > 20_000) return null;
+      const state = JSON.parse(raw) as SavedSession;
+      if (
+        state.version !== 1 ||
+        state.workoutId !== workout?.id ||
+        !Number.isInteger(state.stepIndex) ||
+        state.stepIndex < 0 ||
+        state.stepIndex >= steps.length
+      )
+        return null;
+      if (
+        ![state.remaining, state.elapsed, state.activeSeconds].every(
+          (number) =>
+            Number.isFinite(number) && number >= 0 && number <= 86_400,
+        )
+      )
+        return null;
+      if (
+        !Array.isArray(state.completedExerciseIds) ||
+        !Array.isArray(state.skippedExerciseIds)
+      )
+        return null;
+      const weightEntries = Object.entries(state.weights ?? {});
+      if (
+        weightEntries.length > 100 ||
+        weightEntries.some(
+          ([id, weight]) =>
+            !/^[a-zA-Z0-9._:-]{1,120}$/.test(id) ||
+            typeof weight !== 'object' ||
+            weight === null ||
+            !Number.isFinite(weight.value) ||
+            weight.value < 0 ||
+            weight.value > 2_000 ||
+            (weight.unit !== 'kg' && weight.unit !== 'lb'),
+        )
+      )
+        return null;
+      state.weights = Object.fromEntries(weightEntries);
+      return state;
+    } catch {
+      return null;
+    }
+  };
+
+  const applySession = (state: SavedSession) => {
+    stepIndex = state.stepIndex;
+    remaining = state.remaining;
+    elapsed = state.elapsed;
+    activeSeconds = state.activeSeconds;
+    startedAt = state.startedAt;
+    hasStarted = state.hasStarted ?? state.activeSeconds > 0;
+    completedExerciseIds.clear();
+    state.completedExerciseIds.forEach((id) => completedExerciseIds.add(id));
+    skippedExerciseIds.clear();
+    state.skippedExerciseIds.forEach((id) => skippedExerciseIds.add(id));
+    weights.clear();
+    Object.entries(state.weights).forEach(([id, weight]) =>
+      weights.set(id, weight),
+    );
+    running = false;
+    render();
+  };
+
+  const announce = (message: string) => {
+    if (nodes?.announcement) nodes.announcement.textContent = message;
+  };
+  const setStatus = (message: string) => {
+    if (nodes?.status) nodes.status.textContent = message;
+  };
+
+  const render = () => {
+    const step = current();
+    if (!nodes || !workout || !step) return;
+    nodes.title.textContent = workout.title;
+    nodes.section.textContent = `${step.item.section === 'warmup' ? 'Warm-up' : step.item.section === 'main' ? 'Main workout' : 'Cooldown'} · ${step.kind === 'rest' ? 'Rest' : 'Move'}`;
+    nodes.stepIndex.textContent = String(stepIndex + 1);
+    nodes.stepCount.textContent = String(steps.length);
+    nodes.progress.max = steps.length;
+    nodes.progress.value = stepIndex;
+    nodes.progress.textContent = `${stepIndex} of ${steps.length} steps`;
+    nodes.phase.textContent =
+      step.kind === 'rest'
+        ? 'Rest'
+        : step.kind === 'work'
+          ? 'Timed work'
+          : step.kind === 'distance'
+            ? 'Distance target'
+            : 'Rep target';
+    nodes.time.textContent =
+      step.durationSeconds === null
+        ? `Elapsed ${formatTime(elapsed)}`
+        : formatTime(remaining);
+    nodes.set.textContent =
+      step.kind === 'rest' &&
+      stepIndex > 0 &&
+      steps[stepIndex - 1]?.item.exerciseId !==
+        steps[stepIndex + 1]?.item.exerciseId
+        ? 'Transition to the next movement'
+        : `Set ${step.setNumber} of ${step.totalSets}`;
+    nodes.exercise.textContent = step.item.exercise.name;
+    nodes.target.textContent =
+      step.kind === 'rest'
+        ? `Next: ${targetText(step.item)}`
+        : targetText(step.item);
+    nodes.summary.textContent = step.item.exercise.summary;
+    nodes.instructions.replaceChildren();
+    step.item.exercise.instructions.forEach((instruction) => {
+      const item = document.createElement('li');
+      item.textContent = instruction;
+      nodes.instructions.append(item);
+    });
+    nodes.link.href = `/exercises/${step.item.exercise.slug}/`;
+    nodes.link.textContent = `View full ${step.item.exercise.name} guidance`;
+    const supportsWeight = step.item.exercise.equipment.some(
+      (item) => item === 'one-dumbbell' || item === 'two-dumbbells',
+    );
+    const savedWeight = weights.get(step.item.exerciseId);
+    nodes.weightEntry.hidden = !supportsWeight || step.kind === 'rest';
+    nodes.weightInput.value = savedWeight ? String(savedWeight.value) : '';
+    nodes.weightUnit.value = savedWeight?.unit ?? 'kg';
+    nodes.start.textContent = running
+      ? 'Pause'
+      : hasStarted
+        ? 'Resume'
+        : 'Start';
+    nodes.next.textContent =
+      step.kind === 'rest' ? 'Skip rest' : 'Complete & next';
+    nodes.previous.disabled = stepIndex === 0;
+    nodes.replace.disabled = step.kind === 'rest' || step.item.locked;
+    persist();
+  };
+
+  const cue = (frequency = 660) => {
+    if (muted) return;
+    try {
+      audioContext ??= new AudioContext();
+      const oscillator = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+      oscillator.frequency.value = frequency;
+      gain.gain.setValueAtTime(0.07, audioContext.currentTime);
+      gain.gain.exponentialRampToValueAtTime(
+        0.001,
+        audioContext.currentTime + 0.12,
+      );
+      oscillator.connect(gain).connect(audioContext.destination);
+      oscillator.start();
+      oscillator.stop(audioContext.currentTime + 0.13);
+    } catch {
+      setStatus(
+        'Audio cues are unavailable. Visual controls and timing still work.',
+      );
+    }
+  };
+
+  const acquireWakeLock = async () => {
+    try {
+      if ('wakeLock' in navigator && navigator.wakeLock)
+        wakeLock = await navigator.wakeLock.request('screen');
+    } catch {
+      setStatus(
+        'Screen wake lock was unavailable. The workout still works; keep your device awake manually.',
+      );
+    }
+  };
+  const releaseWakeLock = async () => {
+    try {
+      await wakeLock?.release();
+    } catch {
+      /* Already released. */
+    }
+    wakeLock = null;
+  };
+  const stopTimer = () => {
+    if (timerId !== null) window.clearInterval(timerId);
+    timerId = null;
+  };
+
+  const markCurrentComplete = (step: PlayerStep) => {
+    const laterWorkStep = steps
+      .slice(stepIndex + 1)
+      .some(
+        (candidate) =>
+          candidate.item.exerciseId === step.item.exerciseId &&
+          candidate.kind !== 'rest',
+      );
+    if (!laterWorkStep) {
+      completedExerciseIds.add(step.item.exerciseId);
+      skippedExerciseIds.delete(step.item.exerciseId);
+    }
+  };
+
+  const moveTo = (index: number) => {
+    stepIndex = Math.max(0, Math.min(index, steps.length - 1));
+    const step = current();
+    remaining = step?.durationSeconds ?? 0;
+    elapsed = 0;
+    announce(
+      `${step?.kind === 'rest' ? 'Rest' : 'Begin'}: ${step?.item.exercise.name ?? ''}. Step ${stepIndex + 1} of ${steps.length}.`,
+    );
+    cue(step?.kind === 'rest' ? 520 : 760);
+    render();
+  };
+
+  const finish = async (status: 'completed' | 'ended-early') => {
+    running = false;
+    stopTimer();
+    await releaseWakeLock();
+    try {
+      localStorage.removeItem('wm-guided-session');
+    } catch {
+      /* Session simply cannot be cleared. */
+    }
+    if (player) player.hidden = true;
+    if (!completion || !workout) return;
+    const uniqueItems = [
+      workout.sections.warmup,
+      workout.sections.main,
+      workout.sections.cooldown,
+    ].flatMap((section) => section.exercises);
+    const completedCount = uniqueItems.filter((item) =>
+      completedExerciseIds.has(item.exerciseId),
+    ).length;
+    const heading = completion.querySelector<HTMLElement>(
+      '[data-completion-heading]',
+    );
+    const copy = completion.querySelector<HTMLElement>(
+      '[data-completion-copy]',
+    );
+    if (heading)
+      heading.textContent =
+        status === 'completed' ? 'Workout complete' : 'Workout ended early';
+    if (copy)
+      copy.textContent = `${completedCount} of ${uniqueItems.length} movements completed in ${Math.max(1, Math.round(activeSeconds / 60))} active minutes.`;
+    completion.dataset.sessionStatus = status;
+    completion.hidden = false;
+    completion.focus();
+    announce(
+      status === 'completed' ? 'Workout complete.' : 'Workout ended early.',
+    );
+    cue(920);
+    if ('vibrate' in navigator && !muted) navigator.vibrate([120, 70, 120]);
+  };
+
+  const advance = (markComplete = true) => {
+    const step = current();
+    if (!step) return;
+    if (markComplete && step.kind !== 'rest') markCurrentComplete(step);
+    if (stepIndex >= steps.length - 1) {
+      void finish('completed');
+      return;
+    }
+    moveTo(stepIndex + 1);
+  };
+
+  const tick = () => {
+    const now = performance.now();
+    if (now - lastTick < 900) return;
+    lastTick = now;
+    activeSeconds += 1;
+    const step = current();
+    if (!step) return;
+    if (step.durationSeconds === null) elapsed += 1;
+    else {
+      remaining = Math.max(0, remaining - 1);
+      if (remaining <= 3 && remaining > 0) {
+        cue(700);
+        announce(String(remaining));
+      }
+      if (remaining === 0) {
+        advance(true);
+        return;
+      }
+    }
+    render();
+  };
+
+  const toggleRunning = () => {
+    running = !running;
+    if (running) {
+      hasStarted = true;
+      void audioContext?.resume();
+      void acquireWakeLock();
+      lastTick = performance.now();
+      stopTimer();
+      timerId = window.setInterval(tick, 250);
+      setStatus('Workout running.');
+    } else {
+      stopTimer();
+      void releaseWakeLock();
+      setStatus('Workout paused.');
+    }
+    render();
+  };
+
+  workout = restoreWorkout();
+  if (!workout || !player || !nodes) {
+    if (loading) loading.hidden = true;
+    if (empty) empty.hidden = false;
+  } else {
+    steps = buildSteps(workout);
+    const first = current();
+    remaining = first?.durationSeconds ?? 0;
+    if (loading) loading.hidden = true;
+    player.hidden = false;
+    if ('requestFullscreen' in document.documentElement)
+      nodes.fullscreen.hidden = false;
+    const restored = restoreSession();
+    if (restored && resumeDialog) {
+      resumeDialog.showModal();
+      resumeDialog
+        .querySelector('[data-resume]')
+        ?.addEventListener('click', () => {
+          applySession(restored);
+          resumeDialog.close();
+          setStatus('Recovered session paused. Choose Resume when ready.');
+        });
+      resumeDialog
+        .querySelector('[data-restart]')
+        ?.addEventListener('click', () => {
+          try {
+            localStorage.removeItem('wm-guided-session');
+          } catch {
+            /* Optional. */
+          }
+          resumeDialog.close();
+          render();
+        });
+    } else render();
+  }
+
+  nodes?.start.addEventListener('click', toggleRunning);
+  nodes?.next.addEventListener('click', () => advance(true));
+  nodes?.previous.addEventListener('click', () => {
+    if (stepIndex > 0) moveTo(stepIndex - 1);
+  });
+  nodes?.skip.addEventListener('click', () => {
+    const step = current();
+    if (!step) return;
+    skippedExerciseIds.add(step.item.exerciseId);
+    completedExerciseIds.delete(step.item.exerciseId);
+    const nextIndex = steps.findIndex(
+      (candidate, index) =>
+        index > stepIndex && candidate.item.exerciseId !== step.item.exerciseId,
+    );
+    if (nextIndex < 0) void finish('completed');
+    else moveTo(nextIndex);
+    setStatus(`${step.item.exercise.name} skipped.`);
+  });
+  nodes?.replace.addEventListener('click', () => {
+    const step = current();
+    if (!workout || !step || step.kind === 'rest') return;
+    const replaced = replaceExercise(workout, step.item.itemId);
+    if (!replaced.ok) {
+      setStatus(
+        `${replaced.issue.message} ${replaced.issue.suggestions.join(' ')}`,
+      );
+      return;
+    }
+    workout = replaced.workout;
+    try {
+      localStorage.setItem('wm-guided-workout', JSON.stringify(workout));
+    } catch {
+      /* Current in-memory session remains usable. */
+    }
+    const sectionItems = [
+      workout.sections.warmup,
+      workout.sections.main,
+      workout.sections.cooldown,
+    ].flatMap((section) => section.exercises);
+    const replacementItem = sectionItems.find(
+      (item) => item.slotId === step.item.slotId,
+    );
+    steps = buildSteps(workout);
+    const replacementIndex = replacementItem
+      ? steps.findIndex(
+          (candidate) => candidate.item.itemId === replacementItem.itemId,
+        )
+      : 0;
+    moveTo(Math.max(0, replacementIndex));
+    setStatus(
+      `Replaced with ${replacementItem?.exercise.name ?? 'a compatible movement'}.`,
+    );
+  });
+  nodes?.mute.addEventListener('click', () => {
+    muted = !muted;
+    nodes.mute.setAttribute('aria-pressed', String(muted));
+    nodes.mute.textContent = muted ? 'Unmute cues' : 'Mute cues';
+  });
+  nodes?.fullscreen.addEventListener('click', async () => {
+    try {
+      await document.documentElement.requestFullscreen();
+    } catch {
+      setStatus('Fullscreen was not available.');
+    }
+  });
+  const updateWeight = () => {
+    const step = current();
+    if (!step || !nodes || step.kind === 'rest') return;
+    const parsed = Number(nodes.weightInput.value);
+    if (nodes.weightInput.value === '') weights.delete(step.item.exerciseId);
+    else if (Number.isFinite(parsed) && parsed >= 0 && parsed <= 2_000) {
+      weights.set(step.item.exerciseId, {
+        value: parsed,
+        unit: nodes.weightUnit.value === 'lb' ? 'lb' : 'kg',
+      });
+    }
+    persist();
+  };
+  nodes?.weightInput.addEventListener('input', updateWeight);
+  nodes?.weightUnit.addEventListener('change', updateWeight);
+  nodes?.end.addEventListener('click', () => endDialog?.showModal());
+  endDialog
+    ?.querySelector('[data-cancel-end]')
+    ?.addEventListener('click', () => endDialog.close());
+  endDialog
+    ?.querySelector('[data-confirm-end]')
+    ?.addEventListener('click', () => {
+      endDialog.close();
+      void finish('ended-early');
+    });
+
+  completion
+    ?.querySelector('[data-save-completion]')
+    ?.addEventListener('click', async () => {
+      if (!workout || !completion) return;
+      const uniqueItems = [
+        workout.sections.warmup,
+        workout.sections.main,
+        workout.sections.cooldown,
+      ].flatMap((section) => section.exercises);
+      const completedAt = new Date().toISOString();
+      const record: CompletedWorkoutRecord = {
+        id: `session-${Date.now()}`,
+        workoutId: workout.id,
+        workoutVersion: workout.generatorVersion,
+        title: workout.title,
+        completedAt,
+        updatedAt: completedAt,
+        durationSeconds: Math.min(86_400, activeSeconds),
+        status:
+          completion.dataset.sessionStatus === 'ended-early'
+            ? 'ended-early'
+            : 'completed',
+        exercises: uniqueItems.map((item) => {
+          const loggedWeight = weights.get(item.exerciseId);
+          return {
+            exerciseId: item.exerciseId,
+            name: item.exercise.name,
+            status: completedExerciseIds.has(item.exerciseId)
+              ? 'completed'
+              : 'skipped',
+            sets: Array.from({ length: item.target.sets }, (_, index) => ({
+              setNumber: index + 1,
+              ...(item.target.mode === 'reps'
+                ? { reps: item.target.reps }
+                : {}),
+              ...(item.target.mode === 'time'
+                ? { durationSeconds: item.target.workSeconds }
+                : {}),
+              ...(loggedWeight ? { weight: loggedWeight } : {}),
+            })),
+          };
+        }),
+      };
+      const saveStatus =
+        completion.querySelector<HTMLElement>('[data-save-status]');
+      try {
+        const storage = await openWorkoutMatchStorage();
+        await storage.saveWorkout(record);
+        storage.close();
+        if (saveStatus)
+          saveStatus.textContent =
+            'Completion saved in this browser. It is not backed up automatically.';
+      } catch (error) {
+        if (saveStatus)
+          saveStatus.textContent =
+            error instanceof Error
+              ? error.message
+              : 'Completion could not be saved.';
+      }
+      if (saveStatus) saveStatus.hidden = false;
+    });
+
+  document.addEventListener('keydown', (event) => {
+    const target = event.target as HTMLElement;
+    if (
+      target.closest('input, select, textarea, button, summary') ||
+      target.isContentEditable ||
+      !player ||
+      player.hidden
+    )
+      return;
+    if (event.code === 'Space') {
+      event.preventDefault();
+      toggleRunning();
+    } else if (event.key === 'ArrowLeft' && stepIndex > 0)
+      moveTo(stepIndex - 1);
+    else if (event.key === 'ArrowRight') advance(true);
+    else if (event.key.toLowerCase() === 'm') {
+      muted = !muted;
+      nodes?.mute.setAttribute('aria-pressed', String(muted));
+      if (nodes?.mute)
+        nodes.mute.textContent = muted ? 'Unmute cues' : 'Mute cues';
+    }
+  });
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && running)
+      void acquireWakeLock();
+  });
+  window.addEventListener(
+    'pagehide',
+    () => {
+      stopTimer();
+      persist();
+      void releaseWakeLock();
+      void audioContext?.close();
+    },
+    { once: true },
+  );
+</script>
+
+<style>
+  .guided-shell {
+    min-height: 60svh;
+  }
+  .player-heading {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: start;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  .player-heading h1 {
+    font-size: clamp(2rem, 7vw, 4rem);
+  }
+  .player-tools {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .progress-row {
+    display: grid;
+    gap: 0.25rem;
+    margin-block: 1rem;
+  }
+  .progress-row p {
+    margin: 0;
+  }
+  progress {
+    width: 100%;
+    height: 1rem;
+    accent-color: var(--color-primary);
+  }
+  .active-card {
+    display: grid;
+    overflow: clip;
+  }
+  .phase-panel {
+    display: grid;
+    place-content: center;
+    min-height: 18rem;
+    padding: 1.25rem;
+    background: var(--color-primary-soft);
+    text-align: center;
+  }
+  .phase-time {
+    font-family: ui-monospace, 'Cascadia Mono', monospace;
+    font-size: clamp(3rem, 16vw, 7rem);
+    font-weight: 850;
+    line-height: 1;
+    letter-spacing: -0.07em;
+  }
+  .exercise-panel {
+    padding: clamp(1.2rem, 4vw, 2.25rem);
+  }
+  .exercise-panel h2 {
+    font-size: clamp(1.8rem, 5vw, 3rem);
+  }
+  .exercise-panel li + li {
+    margin-top: 0.55rem;
+  }
+  .target {
+    font-size: 1.25rem;
+    font-weight: 800;
+  }
+  .weight-entry {
+    margin-block: 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.8rem;
+    padding: 0.85rem;
+    background: var(--color-surface-muted);
+  }
+  .weight-entry > label {
+    font-weight: 780;
+  }
+  .weight-controls {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 6rem;
+    gap: 0.55rem;
+    margin-top: 0.45rem;
+  }
+  .weight-entry p {
+    margin-bottom: 0;
+    font-size: 0.88rem;
+  }
+  .player-controls {
+    position: sticky;
+    z-index: 20;
+    bottom: 0;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+    margin-top: 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: 1rem 1rem 0 0;
+    padding: 0.7rem;
+    padding-bottom: calc(0.7rem + env(safe-area-inset-bottom));
+    background: color-mix(in srgb, var(--color-surface) 95%, transparent);
+    box-shadow: var(--shadow-card);
+    backdrop-filter: blur(14px);
+  }
+  .primary-control {
+    grid-column: 1 / -1;
+    min-height: 3.5rem;
+    font-size: 1.15rem;
+  }
+  .end-control {
+    background: var(--color-danger);
+  }
+  .completion {
+    max-width: 48rem;
+    margin-inline: auto;
+  }
+  dialog {
+    width: min(35rem, calc(100% - 2rem));
+    border: 1px solid var(--color-border);
+    border-radius: 1.2rem;
+    padding: 0;
+    background: var(--color-surface);
+    color: var(--color-ink);
+    box-shadow: var(--shadow-card);
+  }
+  dialog::backdrop {
+    background: rgb(0 0 0 / 0.65);
+  }
+  .dialog-card {
+    padding: clamp(1rem, 4vw, 2rem);
+  }
+  @media (min-width: 50rem) {
+    .active-card {
+      grid-template-columns: minmax(18rem, 0.8fr) 1.2fr;
+    }
+    .player-controls {
+      grid-template-columns: repeat(6, 1fr);
+      border-radius: 1rem;
+    }
+    .primary-control {
+      grid-column: auto;
+    }
+  }
+</style>

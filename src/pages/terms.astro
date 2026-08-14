@@ -1,0 +1,122 @@
+---
+import Breadcrumbs from '../components/layout/Breadcrumbs.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="Terms of Use"
+  description="Read the terms and important limitations for using WorkoutMatch exercise information, calculators, local storage, and export features."
+  path="/terms/"
+>
+  <div class="container">
+    <Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Terms' }]} />
+  </div>
+
+  <header class="narrow section-sm">
+    <p class="eyebrow">Use of the website</p>
+    <h1>Terms of use</h1>
+    <p class="lede">
+      These terms describe the intended use and important limitations of
+      WorkoutMatch. If you do not agree with them, do not use the site.
+    </p>
+  </header>
+
+  <article class="narrow terms-content">
+    <section>
+      <h2>Educational use only</h2>
+      <p>
+        WorkoutMatch provides general educational and organizational information
+        for adults. Workouts, exercise descriptions, movement filters,
+        calculators, and progress summaries are not medical advice, diagnosis,
+        treatment, rehabilitation, nutrition care, or professional supervision.
+      </p>
+      <p>
+        You are responsible for deciding whether to use a feature, checking your
+        surroundings and equipment, choosing an appropriate effort, and stopping
+        when needed. See the
+        <a href="/safety/">safety guidance</a> before exercising.
+      </p>
+    </section>
+
+    <section>
+      <h2>Adults and excluded uses</h2>
+      <p>
+        The initial workout and calculator experience is intended for adults
+        aged 20 and older. It is not built for children or teens, pregnancy or
+        postpartum programming, injury rehabilitation, competitive-sport
+        preparation, eating-disorder treatment, or emergency decision-making.
+      </p>
+    </section>
+
+    <section>
+      <h2>Estimates and generated content</h2>
+      <p>
+        Rule-based workouts depend on the inputs, exercise data, template rules,
+        and available candidates. They cannot observe technique or know
+        individual readiness. BMI is a screening calculation, BMR is an equation
+        estimate rather than a measured metabolic rate, and TDEE adds subjective
+        activity-factor assumptions. Results are not guaranteed to be accurate
+        or suitable for a particular decision.
+      </p>
+      <p>
+        Read the <a href="/methodology/">methodology and source limitations</a> before
+        interpreting results.
+      </p>
+    </section>
+
+    <section>
+      <h2>Local data and exports</h2>
+      <p>
+        Saved workout information is stored in your browser when supported and
+        when you choose to save it. Local data can be blocked, cleared,
+        corrupted, or lost, and is not backed up or synchronized by
+        WorkoutMatch. You are responsible for exported files and for reviewing
+        an import before confirming it. Read the <a href="/privacy/"
+          >privacy page</a
+        > for the complete data boundary.
+      </p>
+    </section>
+
+    <section>
+      <h2>Availability and changes</h2>
+      <p>
+        The site may change, become unavailable, or contain errors. Features can
+        depend on browser support, device settings, storage availability, and
+        deployment configuration. Do not rely on WorkoutMatch as the only copy
+        of important information or as an emergency service.
+      </p>
+    </section>
+
+    <section>
+      <h2>Names, links, and site content</h2>
+      <p>
+        WorkoutMatch is a working product name; no trademark, company-name, or
+        domain clearance is implied. External links are provided for source
+        context and convenience. Their operators control their own content and
+        privacy practices.
+      </p>
+      <p>
+        Do not misuse the site, attempt to interfere with its operation, or
+        present its generated or editorial content as individualized clinical
+        guidance. These terms do not remove rights that cannot lawfully be
+        excluded in your jurisdiction.
+      </p>
+    </section>
+  </article>
+</BaseLayout>
+
+<style>
+  .terms-content {
+    padding-bottom: 2rem;
+  }
+
+  .terms-content section + section {
+    margin-top: 2.75rem;
+    border-top: 1px solid var(--color-border);
+    padding-top: 2rem;
+  }
+
+  .terms-content p {
+    color: var(--color-ink-muted);
+  }
+</style>

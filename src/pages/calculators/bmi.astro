@@ -1,0 +1,85 @@
+---
+import BmiCalculator from '../../components/calculators/BmiCalculator.astro';
+import FaqList from '../../components/content/FaqList.astro';
+import AdSlot from '../../components/layout/AdSlot.astro';
+import Breadcrumbs from '../../components/layout/Breadcrumbs.astro';
+import { CITATIONS } from '../../data/citations';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const faqs = [
+  {
+    question: 'Is BMI a diagnosis?',
+    answer:
+      'No. The CDC describes BMI as a screening measure. A clinician may consider other information when assessing health.',
+  },
+  {
+    question: 'Does BMI measure body fat?',
+    answer:
+      'No. BMI uses height and weight and does not directly measure body composition or distinguish fat, muscle, and bone.',
+  },
+  {
+    question: 'Are my measurements saved?',
+    answer:
+      'No. WorkoutMatch calculates in your browser and does not save measurements or the result. You may separately choose to remember only your unit preference.',
+  },
+];
+---
+
+<BaseLayout
+  title="Adult BMI calculator"
+  description="Calculate adult BMI in metric or imperial units, see CDC categories, and understand why BMI is a screening measure rather than a diagnosis."
+  path="/calculators/bmi/"
+>
+  <div class="container">
+    <Breadcrumbs
+      items={[
+        { label: 'Home', href: '/' },
+        { label: 'Calculators', href: '/calculators/' },
+        { label: 'BMI' },
+      ]}
+    />
+  </div>
+  <header class="section-sm narrow">
+    <p class="eyebrow">Height-and-weight screening</p>
+    <h1>Adult BMI calculator</h1>
+    <p class="lede">
+      Calculate body mass index for adults aged 20 and older, then read the
+      category in context—not as a verdict about a body or a diagnosis.
+    </p>
+  </header>
+  <div class="container"><BmiCalculator /></div>
+  <AdSlot placement="calculator-bmi-after-result" />
+  <section class="narrow section prose">
+    <h2>Formula and adult categories</h2>
+    <p>
+      <strong>Metric formula:</strong> weight in kilograms ÷ height in metres². Imperial
+      entries are converted to kilograms and centimetres internally before applying
+      the same formula.
+    </p>
+    <ul>
+      <li>Underweight: below 18.5</li>
+      <li>Healthy weight: 18.5 to below 25</li>
+      <li>Overweight: 25 to below 30</li>
+      <li>
+        Obesity: 30 or above; the explanation distinguishes classes 1, 2, and 3
+      </li>
+    </ul>
+    <h2>What this estimate cannot tell you</h2>
+    <p>
+      BMI does not directly measure body fat, separate fat from muscle and bone,
+      or show fat distribution. The CDC recommends considering it alongside
+      other health information. The labels here follow public-health categories
+      and avoid “ideal weight” claims.
+    </p>
+    <p>
+      Source: <a href={CITATIONS.cdcBmiOverview.url}
+        >{CITATIONS.cdcBmiOverview.title}</a
+      > and <a href={CITATIONS.cdcBmiCategories.url}
+        >{CITATIONS.cdcBmiCategories.title}</a
+      >, {CITATIONS.cdcBmiOverview.publisher}. Reviewed for this page {
+        CITATIONS.cdcBmiOverview.reviewedOn
+      }.
+    </p>
+    <FaqList items={faqs} />
+  </section>
+</BaseLayout>

@@ -1,0 +1,167 @@
+---
+import {
+  EQUIPMENT_OPTIONS,
+  EXERCISE_POSITIONS,
+  EXPERIENCE_LEVELS,
+  IMPACT_LEVELS,
+  MOVEMENT_PATTERNS,
+  MUSCLE_GROUPS,
+  NOISE_LEVELS,
+  SPACE_REQUIREMENTS,
+} from '../../types/exercise';
+
+type FilterField = {
+  key: string;
+  label: string;
+  options: readonly string[];
+};
+
+const filterFields: FilterField[] = [
+  { key: 'equipment', label: 'Equipment', options: EQUIPMENT_OPTIONS },
+  { key: 'muscle', label: 'Muscle group', options: MUSCLE_GROUPS },
+  { key: 'pattern', label: 'Movement pattern', options: MOVEMENT_PATTERNS },
+  { key: 'difficulty', label: 'Difficulty', options: EXPERIENCE_LEVELS },
+  { key: 'position', label: 'Position', options: EXERCISE_POSITIONS },
+  { key: 'impact', label: 'Impact', options: IMPACT_LEVELS },
+  { key: 'noise', label: 'Noise', options: NOISE_LEVELS },
+  { key: 'space', label: 'Space needed', options: SPACE_REQUIREMENTS },
+];
+
+const LABELS: Readonly<Record<string, string>> = {
+  none: 'No equipment',
+  'one-dumbbell': 'One dumbbell',
+  'two-dumbbells': 'Two dumbbells',
+  'resistance-band': 'Resistance band',
+  'chair-or-bench': 'Chair or bench',
+  'pull-up-bar': 'Pull-up bar',
+  'very-small': 'Very small',
+  'knee-dominant': 'Knee dominant',
+  'hip-dominant': 'Hip dominant',
+  'upper-back': 'Upper back',
+  'lower-back': 'Lower back',
+  'hip-flexors': 'Hip flexors',
+  'full-body': 'Full body',
+};
+
+const labelFor = (value: string, key?: string): string =>
+  key === 'impact' && value === 'none'
+    ? 'None'
+    : (LABELS[value] ??
+      value
+        .split('-')
+        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+        .join(' '));
+---
+
+<form
+  id="exercise-filter-form"
+  class="card card-pad filter-form"
+  action="/exercises/"
+  method="get"
+  role="search"
+>
+  <div class="search-field field">
+    <label for="exercise-search">Search the library</label>
+    <input
+      id="exercise-search"
+      name="q"
+      type="search"
+      maxlength="64"
+      autocomplete="off"
+      spellcheck="false"
+      placeholder="Try squat, row, or dead bug"
+      aria-describedby="exercise-filter-help"
+      aria-controls="exercise-results"
+    />
+  </div>
+
+  <p id="exercise-filter-help" class="muted help">
+    Search matches exercise names and aliases. Combine it with any of the
+    filters below.
+  </p>
+
+  <details class="filter-details" open>
+    <summary>Filter exercises</summary>
+    <div class="filter-grid">
+      {
+        filterFields.map((field) => (
+          <div class="field">
+            <label for={`exercise-${field.key}`}>{field.label}</label>
+            <select
+              id={`exercise-${field.key}`}
+              name={field.key}
+              data-filter-key={field.key}
+              aria-controls="exercise-results"
+            >
+              <option value="">
+                All {field.label.toLocaleLowerCase('en')}
+              </option>
+              {field.options.map((value) => (
+                <option value={value}>{labelFor(value, field.key)}</option>
+              ))}
+            </select>
+          </div>
+        ))
+      }
+    </div>
+  </details>
+
+  <div class="filter-actions">
+    <button class="button button-secondary" type="reset" data-clear-filters
+      >Clear all</button
+    >
+    <button class="button button-secondary" type="button" data-copy-filter-link
+      >Copy filtered link</button
+    >
+    <p class="copy-status muted" data-copy-filter-status role="status" hidden>
+    </p>
+  </div>
+</form>
+
+<style>
+  .filter-form {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .search-field {
+    max-width: 42rem;
+  }
+
+  .help {
+    margin: -0.35rem 0 0;
+    font-size: 0.92rem;
+  }
+
+  .filter-details {
+    border-block: 1px solid var(--color-border);
+    padding-block: 0.8rem;
+  }
+
+  summary {
+    min-height: 2.75rem;
+    width: fit-content;
+    padding: 0.55rem 0.15rem;
+    font-weight: 800;
+    cursor: pointer;
+  }
+
+  .filter-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+    gap: 0.85rem;
+    padding-top: 0.8rem;
+  }
+
+  .filter-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.7rem;
+  }
+
+  .copy-status {
+    flex-basis: 100%;
+    margin: 0;
+  }
+</style>

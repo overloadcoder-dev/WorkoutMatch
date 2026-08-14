@@ -1,0 +1,16 @@
+{
+  "name": "WorkoutMatch",
+  "short_name": "WorkoutMatch",
+  "description": "Build practical workouts around your time, space, and equipment.",
+  "start_url": "/",
+  "display": "browser",
+  "background_color": "#f6f2e9",
+  "theme_color": "#087f6b",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

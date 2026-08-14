@@ -1,0 +1,63 @@
+---
+import { createHash } from 'node:crypto';
+import type { CspHash } from 'astro';
+import { absoluteUrl, SITE_CONFIG } from '../../config/site';
+import { hreflangLinks } from '../../config/i18n';
+
+type Props = {
+  title: string;
+  description: string;
+  path: string;
+  image?: string;
+  noindex?: boolean;
+  type?: 'website' | 'article';
+  jsonLd?: Record<string, unknown> | Array<Record<string, unknown>>;
+};
+
+const {
+  title,
+  description,
+  path,
+  image = SITE_CONFIG.socialImage,
+  noindex = false,
+  type = 'website',
+  jsonLd,
+} = Astro.props;
+const fullTitle =
+  title === SITE_CONFIG.name ? title : `${title} | ${SITE_CONFIG.name}`;
+const canonical = absoluteUrl(path);
+const serializedJsonLd = jsonLd
+  ? JSON.stringify(jsonLd).replaceAll('<', '\\u003c')
+  : undefined;
+if (serializedJsonLd) {
+  const hash =
+    `sha256-${createHash('sha256').update(serializedJsonLd).digest('base64')}` as CspHash;
+  Astro.csp?.insertScriptHash(hash);
+}
+---
+
+<title>{fullTitle}</title>
+<meta name="description" content={description} />
+<link rel="canonical" href={canonical} />
+<meta name="robots" content={noindex ? 'noindex, nofollow' : 'index, follow'} />
+<meta property="og:type" content={type} />
+<meta property="og:site_name" content={SITE_CONFIG.name} />
+<meta property="og:locale" content="en_US" />
+<meta property="og:title" content={fullTitle} />
+<meta property="og:description" content={description} />
+<meta property="og:url" content={canonical} />
+<meta property="og:image" content={absoluteUrl(image)} />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={fullTitle} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={absoluteUrl(image)} />
+{
+  hreflangLinks(path).map(({ hreflang, href }) => (
+    <link rel="alternate" hreflang={hreflang} href={absoluteUrl(href)} />
+  ))
+}
+{
+  serializedJsonLd && (
+    <script is:inline type="application/ld+json" set:html={serializedJsonLd} />
+  )
+}

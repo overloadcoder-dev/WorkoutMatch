@@ -1,0 +1,83 @@
+---
+import SiteFooter from '../components/layout/SiteFooter.astro';
+import SiteHeader from '../components/layout/SiteHeader.astro';
+import SeoHead from '../components/seo/SeoHead.astro';
+import { absoluteUrl, SITE_CONFIG } from '../config/site';
+import '../styles/global.css';
+
+type Props = {
+  title: string;
+  description: string;
+  path?: string;
+  noindex?: boolean;
+  bodyClass?: string;
+  jsonLd?: Record<string, unknown> | Array<Record<string, unknown>>;
+};
+
+const {
+  title,
+  description,
+  path = Astro.url.pathname,
+  noindex = false,
+  bodyClass = '',
+  jsonLd,
+} = Astro.props;
+
+const websiteJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: SITE_CONFIG.name,
+  url: absoluteUrl('/'),
+  description: SITE_CONFIG.description,
+  inLanguage: 'en',
+};
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="theme-color" content={SITE_CONFIG.themeColor} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <SeoHead
+      title={title}
+      description={description}
+      path={path}
+      noindex={noindex}
+      jsonLd={jsonLd ?? websiteJsonLd}
+    />
+    <script is:inline src="/theme-init.js"></script>
+  </head>
+  <body class={bodyClass}>
+    <a class="skip-link" href="#main-content">Skip to main content</a>
+    <SiteHeader />
+    <main id="main-content" tabindex="-1">
+      <slot />
+    </main>
+    <SiteFooter />
+  </body>
+</html>
+
+<style is:global>
+  .skip-link {
+    position: fixed;
+    z-index: 100;
+    top: 0.5rem;
+    left: 0.5rem;
+    translate: 0 -160%;
+    border-radius: 0.6rem;
+    padding: 0.7rem 1rem;
+    background: var(--color-ink);
+    color: var(--color-canvas);
+    font-weight: 800;
+  }
+
+  .skip-link:focus {
+    translate: 0;
+  }
+</style>

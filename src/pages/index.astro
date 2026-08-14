@@ -1,0 +1,350 @@
+---
+import AdSlot from '../components/layout/AdSlot.astro';
+import FaqList from '../components/content/FaqList.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { curatedWorkouts } from '../data/curated-workouts';
+
+const featuredWorkouts = curatedWorkouts.filter(({ slug }) =>
+  ['no-equipment', 'one-dumbbell', 'quiet-apartment', '15-minute'].includes(
+    slug,
+  ),
+);
+
+const faqs = [
+  {
+    question: 'Do I need an account?',
+    answer:
+      'No. You can generate and start a workout without creating an account. When you choose to save progress, the application keeps it in this browser profile rather than syncing it to a WorkoutMatch server.',
+  },
+  {
+    question: 'What if my constraints leave too few exercises?',
+    answer:
+      'The generator should explain the conflict instead of silently ignoring a selection. You can then relax a specific preference, change focus, or choose a shorter template.',
+  },
+  {
+    question: 'Is WorkoutMatch medical or rehabilitation advice?',
+    answer:
+      'No. It organizes general exercise information for adults and cannot diagnose symptoms, assess readiness, or replace individualized guidance from a qualified professional.',
+  },
+];
+---
+
+<BaseLayout
+  title="WorkoutMatch"
+  description="Choose your time, space, equipment, experience, and movement preferences. Get a balanced workout you can start now—without an account."
+  path="/"
+>
+  <section class="container home-hero section">
+    <div class="hero-copy">
+      <p class="eyebrow">Workout builder for real-life constraints</p>
+      <h1>Choose what you have. Get a balanced workout you can start now.</h1>
+      <p class="lede">
+        Match a practical session to your available time, equipment, room,
+        experience, and movement preferences. No account or long setup required.
+      </p>
+      <div class="button-row hero-actions">
+        <a class="button" href="/generate/">Build my workout</a>
+        <a class="button button-secondary" href="/quick-workout/"
+          >Get a quick workout</a
+        >
+      </div>
+      <p class="microcopy">
+        The quick route asks for duration, equipment, focus, and
+        quiet/no-jumping preference. Use the full builder when every constraint
+        matters.
+      </p>
+    </div>
+
+    <aside class="card match-card" aria-labelledby="match-heading">
+      <p class="eyebrow">What gets matched</p>
+      <h2 id="match-heading">Your situation, not an imaginary gym</h2>
+      <ul>
+        <li>
+          <strong>5–45 minutes</strong><span>Warm-up and cooldown included</span
+          >
+        </li>
+        <li>
+          <strong>Equipment you own</strong><span
+            >From none to bands, dumbbells, a chair, or a bar</span
+          >
+        </li>
+        <li>
+          <strong>Where you move</strong><span
+            >Quiet, small-space, standing, no-floor, and no-jump choices</span
+          >
+        </li>
+        <li>
+          <strong>A balanced structure</strong><span
+            >Movement patterns chosen together, not a random list</span
+          >
+        </li>
+      </ul>
+    </aside>
+  </section>
+
+  <AdSlot placement="home-after-introduction" />
+
+  <section class="process-band section-sm" aria-labelledby="how-heading">
+    <div class="container">
+      <p class="eyebrow">Three short steps</p>
+      <h2 id="how-heading">From constraints to a usable session</h2>
+      <ol class="step-grid">
+        <li class="card card-pad">
+          <span class="step-number" aria-hidden="true">1</span>
+          <h3>Tell us what is available</h3>
+          <p>
+            Choose equipment, duration, room needs, and movements you prefer to
+            avoid today.
+          </p>
+        </li>
+        <li class="card card-pad">
+          <span class="step-number" aria-hidden="true">2</span>
+          <h3>Get a structured match</h3>
+          <p>
+            The local rule-based builder filters incompatible exercises and
+            fills a balanced template.
+          </p>
+        </li>
+        <li class="card card-pad">
+          <span class="step-number" aria-hidden="true">3</span>
+          <h3>Review before starting</h3>
+          <p>
+            Check the rationale, exercise order, dose, rest, substitutions, and
+            safety note.
+          </p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="container section" aria-labelledby="situations-heading">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Ready-made examples</p>
+        <h2 id="situations-heading">Start with a familiar situation</h2>
+      </div>
+      <a href="/workouts/">Browse all eight curated workouts</a>
+    </div>
+    <div class="workout-grid">
+      {
+        featuredWorkouts.map((workout) => (
+          <article class="card card-pad">
+            <p class="eyebrow">{workout.duration}</p>
+            <h3>
+              <a href={`/workouts/${workout.slug}/`}>{workout.title}</a>
+            </h3>
+            <p class="muted">{workout.summary}</p>
+            <ul class="tag-list" aria-label={`${workout.title} details`}>
+              <li class="tag">{workout.equipment}</li>
+              <li class="tag">{workout.space}</li>
+            </ul>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  <section
+    class="container section-sm feature-grid"
+    aria-labelledby="more-tools-heading"
+  >
+    <div class="feature-copy">
+      <p class="eyebrow">Useful beyond one workout</p>
+      <h2 id="more-tools-heading">Clear tools, no account wall</h2>
+      <p class="lede">
+        Explore complete movement instructions, time intervals, estimate adult
+        BMI or energy equations, and choose whether to save workout history on
+        this device.
+      </p>
+    </div>
+    <div class="grid-cards">
+      <article class="card card-pad">
+        <h3><a href="/exercises/">Exercise library</a></h3>
+        <p class="muted">
+          Search detailed instructions, common mistakes, variations, and
+          equipment needs.
+        </p>
+      </article>
+      <article class="card card-pad">
+        <h3><a href="/timers/interval/">Interval timer</a></h3>
+        <p class="muted">
+          Run work and rest intervals with visible, keyboard-usable controls.
+        </p>
+      </article>
+      <article class="card card-pad">
+        <h3><a href="/calculators/">Adult calculators</a></h3>
+        <p class="muted">
+          Use BMI, BMR, and TDEE estimates with formulas and limitations shown.
+        </p>
+      </article>
+      <article class="card card-pad">
+        <h3><a href="/my-progress/">Local progress</a></h3>
+        <p class="muted">
+          Save, export, import, or clear workout records in this browser
+          profile.
+        </p>
+      </article>
+    </div>
+  </section>
+
+  <section
+    class="container section-sm principles"
+    aria-labelledby="principles-heading"
+  >
+    <div class="card card-pad prose">
+      <p class="eyebrow">Honest boundaries</p>
+      <h2 id="principles-heading">
+        General exercise organization—not medical care
+      </h2>
+      <p>
+        WorkoutMatch does not diagnose pain, prescribe rehabilitation, estimate
+        calories burned, or promise health outcomes. It is designed for adults
+        choosing a general workout. Read our
+        <a href="/methodology/">methodology</a>, <a href="/safety/"
+          >safety guidance</a
+        >, and
+        <a href="/privacy/">plain-language privacy explanation</a> before relying
+        on a tool.
+      </p>
+    </div>
+  </section>
+
+  <div class="narrow section-sm">
+    <FaqList items={faqs} heading="Before you use WorkoutMatch" />
+  </div>
+</BaseLayout>
+
+<style>
+  .home-hero {
+    display: grid;
+    gap: clamp(2rem, 5vw, 4rem);
+    align-items: center;
+  }
+
+  .home-hero h1 {
+    max-width: 15ch;
+  }
+
+  .hero-actions {
+    margin-top: 1.5rem;
+  }
+
+  .microcopy {
+    max-width: 42rem;
+    margin-bottom: 0;
+    color: var(--color-ink-muted);
+    font-size: 0.9rem;
+  }
+
+  .match-card {
+    overflow: hidden;
+    padding: clamp(1.25rem, 3vw, 2rem);
+  }
+
+  .match-card h2 {
+    font-size: clamp(1.65rem, 3vw, 2.35rem);
+  }
+
+  .match-card ul,
+  .step-grid {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .match-card li {
+    display: grid;
+    gap: 0.1rem;
+    border-top: 1px solid var(--color-border);
+    padding-block: 0.85rem;
+  }
+
+  .match-card span,
+  .step-grid p {
+    color: var(--color-ink-muted);
+  }
+
+  .process-band {
+    border-block: 1px solid var(--color-border);
+    background: color-mix(
+      in srgb,
+      var(--color-primary-soft) 52%,
+      var(--color-canvas)
+    );
+  }
+
+  .step-grid {
+    display: grid;
+    gap: 1rem;
+    counter-reset: steps;
+  }
+
+  .step-grid li {
+    position: relative;
+  }
+
+  .step-number {
+    display: grid;
+    width: 2.2rem;
+    height: 2.2rem;
+    place-items: center;
+    margin-bottom: 1rem;
+    border-radius: 50%;
+    background: var(--color-primary);
+    color: #fff;
+    font-weight: 850;
+  }
+
+  .section-heading {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.2rem;
+  }
+
+  .section-heading h2 {
+    margin-bottom: 0;
+  }
+
+  .section-heading > a {
+    font-weight: 780;
+  }
+
+  .workout-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+    gap: 1rem;
+  }
+
+  .workout-grid h3 a,
+  .feature-grid h3 a {
+    color: var(--color-ink);
+  }
+
+  .feature-grid {
+    display: grid;
+    gap: 2rem;
+  }
+
+  .principles > div {
+    max-width: none;
+    border-inline-start: 0.35rem solid var(--color-accent);
+  }
+
+  @media (min-width: 52rem) {
+    .home-hero {
+      grid-template-columns: minmax(0, 1.25fr) minmax(21rem, 0.75fr);
+    }
+
+    .step-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .feature-grid {
+      grid-template-columns: minmax(17rem, 0.7fr) minmax(0, 1.3fr);
+      align-items: start;
+    }
+  }
+</style>

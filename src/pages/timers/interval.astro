@@ -1,0 +1,48 @@
+---
+import Breadcrumbs from '../../components/layout/Breadcrumbs.astro';
+import IntervalTimer from '../../components/timer/IntervalTimer.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="Simple interval workout timer"
+  description="Run customizable work and rest intervals with rounds, pause, skip, accessible phase announcements, and optional local audio and vibration cues."
+  path="/timers/interval/"
+>
+  <div class="container">
+    <Breadcrumbs
+      items={[{ label: 'Home', href: '/' }, { label: 'Interval timer' }]}
+    />
+  </div>
+  <header class="section-sm narrow">
+    <p class="eyebrow">No account, no workout required</p>
+    <h1>Interval workout timer</h1>
+    <p class="lede">
+      Set work, rest, and rounds for any routine. The timer runs in this page
+      and does not save a workout record.
+    </p>
+  </header>
+  <div class="container section-sm"><IntervalTimer /></div>
+  <section class="narrow section-sm prose">
+    <h2>How to use it</h2>
+    <ol>
+      <li>
+        Choose a work interval, optional rest interval, and number of rounds.
+      </li>
+      <li>
+        Select Load timer, then Start. Audio begins only after that gesture.
+      </li>
+      <li>
+        Pause or skip an interval whenever you need. Stop if a movement does not
+        feel right for you.
+      </li>
+    </ol>
+    <p>
+      Audio, vibration, and precise background timing can vary by browser and
+      device. The display and manual controls remain available without those
+      features. For an exercise-by-exercise session, <a href="/generate/"
+        >build a matched workout</a
+      > and start guided mode.
+    </p>
+  </section>
+</BaseLayout>

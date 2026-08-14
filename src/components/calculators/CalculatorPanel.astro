@@ -1,0 +1,48 @@
+---
+type Props = {
+  title: string;
+  description: string;
+  formId: string;
+};
+
+const { title, description, formId } = Astro.props;
+---
+
+<section class="calculator card" aria-labelledby={`${formId}-title`}>
+  <div class="calculator-copy">
+    <p class="eyebrow">Adult estimate</p>
+    <h2 id={`${formId}-title`}>{title}</h2>
+    <p>{description}</p>
+  </div>
+  <div class="calculator-body">
+    <slot />
+  </div>
+</section>
+
+<style>
+  .calculator {
+    overflow: clip;
+  }
+
+  .calculator-copy,
+  .calculator-body {
+    padding: clamp(1.1rem, 4vw, 2rem);
+  }
+
+  .calculator-copy {
+    background: var(--color-primary-soft);
+  }
+
+  .calculator-copy p:last-child {
+    max-width: 38rem;
+    margin-bottom: 0;
+    color: var(--color-ink-muted);
+  }
+
+  @media (min-width: 56rem) {
+    .calculator {
+      display: grid;
+      grid-template-columns: minmax(15rem, 0.8fr) minmax(0, 1.5fr);
+    }
+  }
+</style>

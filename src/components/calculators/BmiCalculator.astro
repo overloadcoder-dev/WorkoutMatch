@@ -1,0 +1,254 @@
+---
+import CalculatorPanel from './CalculatorPanel.astro';
+import MeasurementFields from './MeasurementFields.astro';
+---
+
+<CalculatorPanel
+  title="Calculate adult BMI"
+  description="Enter measurements only when you choose Calculate. WorkoutMatch does not save or send them."
+  formId="bmi"
+>
+  <form id="bmi-form" novalidate>
+    <div
+      class="error-summary"
+      data-error-summary
+      role="alert"
+      tabindex="-1"
+      hidden
+    >
+      <h3>Check these fields</h3>
+      <ul></ul>
+    </div>
+    <MeasurementFields prefix="bmi" />
+    <div class="button-row no-print">
+      <button class="button" type="submit">Calculate BMI</button>
+      <button class="button button-secondary" type="reset">Reset</button>
+    </div>
+  </form>
+  <section
+    id="bmi-result"
+    class="result card card-pad"
+    aria-live="polite"
+    tabindex="-1"
+    hidden
+  >
+    <p class="eyebrow">Your estimate</p>
+    <h3><span data-bmi-value></span> BMI</h3>
+    <p><strong data-bmi-category></strong></p>
+    <p class="muted">
+      BMI is a screening measure, not a diagnosis. It does not directly measure
+      body composition.
+    </p>
+    <div class="button-row no-print">
+      <button class="button button-secondary" type="button" data-copy-result
+        >Copy result summary</button
+      >
+      <button class="button button-secondary" type="button" data-print
+        >Print</button
+      >
+    </div>
+    <p class="status" data-copy-status role="status" hidden></p>
+  </section>
+</CalculatorPanel>
+
+<script>
+  import {
+    calculateBmi,
+    CalculatorValidationError,
+    roundForDisplay,
+    type BodyMeasurements,
+  } from '../../lib/calculators';
+
+  const form = document.querySelector<HTMLFormElement>('#bmi-form');
+  const result = document.querySelector<HTMLElement>('#bmi-result');
+
+  const setUnits = (
+    formElement: HTMLFormElement,
+    unit: 'metric' | 'imperial',
+  ) => {
+    formElement
+      .querySelectorAll<HTMLElement>('[data-unit-panel]')
+      .forEach((panel) => {
+        const active = panel.dataset.unitPanel === unit;
+        panel.hidden = !active;
+        panel.querySelectorAll<HTMLInputElement>('input').forEach((input) => {
+          input.disabled = !active;
+        });
+      });
+  };
+
+  const clearErrors = (formElement: HTMLFormElement) => {
+    formElement
+      .querySelectorAll<HTMLElement>('[data-error-for]')
+      .forEach((error) => {
+        error.textContent = '';
+      });
+    formElement.querySelectorAll<HTMLInputElement>('input').forEach((input) => {
+      input.removeAttribute('aria-invalid');
+      input.removeAttribute('aria-describedby');
+    });
+    const summary = formElement.querySelector<HTMLElement>(
+      '[data-error-summary]',
+    );
+    if (summary) summary.hidden = true;
+  };
+
+  if (form && result) {
+    const savedUnits = (() => {
+      try {
+        return localStorage.getItem('wm-units') === 'imperial'
+          ? 'imperial'
+          : 'metric';
+      } catch {
+        return 'metric';
+      }
+    })();
+    const savedRadio = form.querySelector<HTMLInputElement>(
+      `input[name="unitSystem"][value="${savedUnits}"]`,
+    );
+    if (savedRadio) savedRadio.checked = true;
+    setUnits(form, savedUnits);
+
+    form
+      .querySelectorAll<HTMLInputElement>('input[name="unitSystem"]')
+      .forEach((radio) => {
+        radio.addEventListener('change', () =>
+          setUnits(form, radio.value as 'metric' | 'imperial'),
+        );
+      });
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      clearErrors(form);
+      result.hidden = true;
+      const data = new FormData(form);
+      const unitSystem =
+        data.get('unitSystem') === 'imperial' ? 'imperial' : 'metric';
+      const input: BodyMeasurements =
+        unitSystem === 'metric'
+          ? {
+              unitSystem,
+              weightKg: Number(data.get('weightKg')),
+              heightCm: Number(data.get('heightCm')),
+            }
+          : {
+              unitSystem,
+              weightLb: Number(data.get('weightLb')),
+              heightFeet: Number(data.get('heightFeet')),
+              heightInches: Number(data.get('heightInches')),
+            };
+
+      try {
+        const bmi = calculateBmi(input);
+        const value = roundForDisplay(bmi.value, 1).toFixed(1);
+        const valueNode = result.querySelector<HTMLElement>('[data-bmi-value]');
+        const categoryNode = result.querySelector<HTMLElement>(
+          '[data-bmi-category]',
+        );
+        if (valueNode) valueNode.textContent = value;
+        if (categoryNode)
+          categoryNode.textContent = bmi.obesityClassLabel ?? bmi.label;
+        result.dataset.copyText = `Adult BMI estimate: ${value}. Category: ${bmi.obesityClassLabel ?? bmi.label}. BMI is a screening measure, not a diagnosis.`;
+        result.hidden = false;
+        result.focus();
+        if (data.get('rememberUnits') === 'on') {
+          try {
+            localStorage.setItem('wm-units', unitSystem);
+          } catch {
+            /* Preference storage is optional. */
+          }
+        }
+      } catch (error) {
+        const issues =
+          error instanceof CalculatorValidationError
+            ? error.issues
+            : [
+                {
+                  path: '',
+                  message:
+                    'We could not calculate this estimate. Check your entries.',
+                },
+              ];
+        const summary = form.querySelector<HTMLElement>('[data-error-summary]');
+        const list = summary?.querySelector('ul');
+        if (list) list.replaceChildren();
+        issues.forEach((issue) => {
+          const inputNode = form.elements.namedItem(
+            issue.path,
+          ) as HTMLInputElement | null;
+          const errorNode = form.querySelector<HTMLElement>(
+            `[data-error-for="${issue.path}"]`,
+          );
+          if (inputNode) {
+            inputNode.setAttribute('aria-invalid', 'true');
+            if (errorNode?.id)
+              inputNode.setAttribute('aria-describedby', errorNode.id);
+          }
+          if (errorNode) errorNode.textContent = issue.message;
+          const item = document.createElement('li');
+          if (inputNode?.id) {
+            const link = document.createElement('a');
+            link.href = `#${inputNode.id}`;
+            link.textContent = issue.message;
+            item.append(link);
+          } else {
+            item.textContent = issue.message;
+          }
+          list?.append(item);
+        });
+        if (summary) {
+          summary.hidden = false;
+          summary.focus();
+        }
+      }
+    });
+
+    form.addEventListener('reset', () => {
+      queueMicrotask(() => {
+        clearErrors(form);
+        setUnits(form, 'metric');
+        result.hidden = true;
+      });
+    });
+
+    result
+      .querySelector('[data-print]')
+      ?.addEventListener('click', () => window.print());
+    result
+      .querySelector('[data-copy-result]')
+      ?.addEventListener('click', async () => {
+        const status = result.querySelector<HTMLElement>('[data-copy-status]');
+        try {
+          await navigator.clipboard.writeText(result.dataset.copyText ?? '');
+          if (status)
+            status.textContent =
+              'Result summary copied without your measurements.';
+        } catch {
+          if (status)
+            status.textContent =
+              'Copy is unavailable. You can select the result text manually.';
+        }
+        if (status) status.hidden = false;
+      });
+  }
+</script>
+
+<style>
+  .error-summary {
+    margin-bottom: 1rem;
+    border: 2px solid var(--color-danger);
+    border-radius: 0.8rem;
+    padding: 1rem;
+  }
+
+  .error-summary h3 {
+    font-size: 1.05rem;
+  }
+  .result {
+    margin-top: 1.5rem;
+    box-shadow: none;
+  }
+  .result h3 {
+    font-size: clamp(2rem, 6vw, 3.8rem);
+  }
+</style>

@@ -1,0 +1,150 @@
+---
+import ExerciseCard from '../../components/exercises/ExerciseCard.astro';
+import ExerciseFilters from '../../components/exercises/ExerciseFilters.astro';
+import Breadcrumbs from '../../components/layout/Breadcrumbs.astro';
+import { EXERCISES } from '../../data/exercises';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="Exercise library"
+  description={`Browse ${EXERCISES.length} clearly explained exercises by equipment, muscle group, movement pattern, difficulty, position, impact, noise, and space.`}
+  path="/exercises/"
+>
+  <div class="container">
+    <Breadcrumbs
+      items={[{ label: 'Home', href: '/' }, { label: 'Exercises' }]}
+    />
+  </div>
+
+  <header class="narrow section-sm">
+    <p class="eyebrow">Move with context</p>
+    <h1>Exercise library</h1>
+    <p class="lede">
+      Find a movement that fits the equipment and room you have. Every exercise
+      has written setup, instructions, breathing cues, common mistakes, safety
+      notes, and linked alternatives.
+    </p>
+  </header>
+
+  <section class="container library" aria-labelledby="find-exercises-heading">
+    <h2 id="find-exercises-heading">Find an exercise</h2>
+    <p class="muted filter-intro">
+      All exercises remain in this page's built HTML. Search and filters enhance
+      the list in your browser, and recognized exercise terms plus selected
+      filters can be restored from a shared link.
+    </p>
+    <ExerciseFilters />
+
+    <div class="result-toolbar">
+      <p
+        id="exercise-result-count"
+        class="result-count"
+        data-exercise-count
+        role="status"
+        aria-live="polite"
+      >
+        {EXERCISES.length} exercises
+      </p>
+      <p class="muted">Select an exercise for its complete written guide.</p>
+    </div>
+
+    <div class="empty-state card card-pad" data-exercise-empty hidden>
+      <h2>No exercises match yet</h2>
+      <p>
+        Try a shorter exercise name, choose “All” for one or more filters, or
+        clear everything and start with the equipment you have.
+      </p>
+      <button class="button button-secondary" type="button" data-empty-clear
+        >Clear all filters</button
+      >
+    </div>
+
+    <ul
+      id="exercise-results"
+      class="exercise-grid"
+      aria-labelledby="exercise-result-count"
+    >
+      {EXERCISES.map((exercise) => <ExerciseCard exercise={exercise} />)}
+    </ul>
+  </section>
+
+  <section
+    class="narrow section-sm prose"
+    aria-labelledby="using-library-heading"
+  >
+    <h2 id="using-library-heading">Use the library as a starting point</h2>
+    <p>
+      The difficulty label describes the movement in this collection, not
+      whether it is right for a particular person. Start with a controllable
+      range and pace, use linked easier variations when useful, and stop if a
+      movement causes pain, dizziness, or another concerning symptom.
+    </p>
+    <p>
+      For a complete session that balances movement patterns and respects your
+      selected constraints, use the
+      <a href="/generate/">workout generator</a>. Read the <a href="/safety/"
+        >general safety guidance</a
+      >
+      before training.
+    </p>
+  </section>
+</BaseLayout>
+
+<script>
+  import '../../scripts/exercise-filter';
+</script>
+
+<style>
+  .library {
+    padding-bottom: clamp(2rem, 5vw, 3.5rem);
+  }
+
+  .filter-intro {
+    max-width: 52rem;
+    margin-top: -0.35rem;
+  }
+
+  .result-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.4rem 1rem;
+    margin-top: 1.5rem;
+  }
+
+  .result-toolbar p {
+    margin-block: 0;
+  }
+
+  .result-count {
+    color: var(--color-ink);
+    font-size: 1.15rem;
+    font-weight: 800;
+  }
+
+  .exercise-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr));
+    gap: 1rem;
+    margin: 1rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .empty-state {
+    max-width: 42rem;
+    margin-top: 1rem;
+    border-inline-start: 0.35rem solid var(--color-accent);
+    box-shadow: none;
+  }
+
+  .empty-state h2 {
+    font-size: clamp(1.5rem, 3vw, 2rem);
+  }
+
+  .empty-state p {
+    color: var(--color-ink-muted);
+  }
+</style>

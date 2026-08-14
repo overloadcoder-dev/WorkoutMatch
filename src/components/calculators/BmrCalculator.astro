@@ -1,0 +1,257 @@
+---
+import CalculatorPanel from './CalculatorPanel.astro';
+import MeasurementFields from './MeasurementFields.astro';
+---
+
+<CalculatorPanel
+  title="Estimate resting energy needs"
+  description="The Mifflin–St Jeor equations estimate resting energy expenditure. This is not a measured metabolic rate."
+  formId="bmr"
+>
+  <form id="bmr-form" novalidate>
+    <div
+      class="error-summary"
+      data-error-summary
+      role="alert"
+      tabindex="-1"
+      hidden
+    >
+      <h3>Check these fields</h3><ul></ul>
+    </div>
+    <MeasurementFields prefix="bmr" />
+    <div class="field">
+      <label for="bmr-age">Age in years</label>
+      <input
+        id="bmr-age"
+        name="age"
+        type="number"
+        inputmode="numeric"
+        min="20"
+        max="120"
+        step="1"
+        autocomplete="off"
+      />
+      <p class="field-error error-text" id="bmr-age-error" data-error-for="age">
+      </p>
+    </div>
+    <fieldset class="stack equation-field">
+      <legend>Equation coefficient</legend>
+      <p class="muted">
+        This selection is required by the published equation and is not a
+        complete statement of gender identity.
+      </p>
+      <div class="choice-grid">
+        <label class="choice"
+          ><input type="radio" name="equation" value="male" checked /> Male equation</label
+        >
+        <label class="choice"
+          ><input type="radio" name="equation" value="female" /> Female equation</label
+        >
+        <label class="choice"
+          ><input type="radio" name="equation" value="both" /> Show both estimates</label
+        >
+      </div>
+      <p class="field-error error-text" data-error-for="equation"></p>
+    </fieldset>
+    <div class="button-row no-print">
+      <button class="button" type="submit">Estimate BMR</button>
+      <button class="button button-secondary" type="reset">Reset</button>
+    </div>
+  </form>
+  <section
+    id="bmr-result"
+    class="result card card-pad"
+    aria-live="polite"
+    tabindex="-1"
+    hidden
+  >
+    <p class="eyebrow">Estimated resting energy</p>
+    <div data-selected-result>
+      <h3><span data-selected-value></span> kcal/day</h3>
+      <p data-selected-label></p>
+    </div>
+    <dl data-both-results hidden>
+      <div>
+        <dt>Male equation</dt><dd><span data-male-value></span> kcal/day</dd>
+      </div>
+      <div>
+        <dt>Female equation</dt><dd>
+          <span data-female-value></span> kcal/day
+        </dd>
+      </div>
+    </dl>
+    <p class="muted">
+      This prediction is an estimate of energy used at rest. Daily energy needs
+      also vary with activity and individual circumstances.
+    </p>
+    <div class="button-row no-print">
+      <button class="button button-secondary" type="button" data-copy-result
+        >Copy result summary</button
+      >
+      <button class="button button-secondary" type="button" data-print
+        >Print</button
+      >
+    </div>
+    <p class="status" data-copy-status role="status" hidden></p>
+  </section>
+</CalculatorPanel>
+
+<script>
+  import {
+    calculateBmr,
+    CalculatorValidationError,
+    roundForDisplay,
+    type BmrEquationSelection,
+    type BmrInput,
+  } from '../../lib/calculators';
+  import {
+    clearCalculatorErrors,
+    formNumber,
+    initializeUnitControls,
+    readBodyMeasurements,
+    rememberUnits,
+    setUnitPanels,
+    showCalculatorErrors,
+  } from '../../scripts/calculator-ui';
+
+  const form = document.querySelector<HTMLFormElement>('#bmr-form');
+  const result = document.querySelector<HTMLElement>('#bmr-result');
+
+  if (form && result) {
+    initializeUnitControls(form);
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      clearCalculatorErrors(form);
+      result.hidden = true;
+      const data = new FormData(form);
+      const measurements = readBodyMeasurements(data);
+      const equation = String(data.get('equation')) as BmrEquationSelection;
+      const input = {
+        ...measurements,
+        age: formNumber(data, 'age'),
+        equation,
+      } as BmrInput;
+
+      try {
+        const bmr = calculateBmr(input);
+        const selected = result.querySelector<HTMLElement>(
+          '[data-selected-result]',
+        );
+        const both = result.querySelector<HTMLElement>('[data-both-results]');
+        const male = roundForDisplay(bmr.estimates.male);
+        const female = roundForDisplay(bmr.estimates.female);
+        const maleNode = result.querySelector<HTMLElement>('[data-male-value]');
+        const femaleNode = result.querySelector<HTMLElement>(
+          '[data-female-value]',
+        );
+        if (maleNode) maleNode.textContent = male.toLocaleString();
+        if (femaleNode) femaleNode.textContent = female.toLocaleString();
+
+        if (equation === 'both') {
+          if (selected) selected.hidden = true;
+          if (both) both.hidden = false;
+          result.dataset.copyText = `Mifflin–St Jeor estimates: male equation ${male} kcal/day; female equation ${female} kcal/day. These are estimates, not measured metabolic rates.`;
+        } else {
+          const value = equation === 'male' ? male : female;
+          const valueNode = result.querySelector<HTMLElement>(
+            '[data-selected-value]',
+          );
+          const labelNode = result.querySelector<HTMLElement>(
+            '[data-selected-label]',
+          );
+          if (valueNode) valueNode.textContent = value.toLocaleString();
+          if (labelNode)
+            labelNode.textContent = `${equation === 'male' ? 'Male' : 'Female'} Mifflin–St Jeor equation`;
+          if (selected) selected.hidden = false;
+          if (both) both.hidden = true;
+          result.dataset.copyText = `Mifflin–St Jeor resting energy estimate: ${value} kcal/day using the ${equation} equation. This is an estimate, not a measured metabolic rate.`;
+        }
+        rememberUnits(data);
+        result.hidden = false;
+        result.focus();
+      } catch (error) {
+        showCalculatorErrors(
+          form,
+          error instanceof CalculatorValidationError
+            ? error.issues
+            : [
+                {
+                  path: '',
+                  message:
+                    'We could not calculate this estimate. Check your entries.',
+                },
+              ],
+        );
+      }
+    });
+
+    form.addEventListener('reset', () =>
+      queueMicrotask(() => {
+        clearCalculatorErrors(form);
+        setUnitPanels(form, 'metric');
+        result.hidden = true;
+      }),
+    );
+    result
+      .querySelector('[data-print]')
+      ?.addEventListener('click', () => window.print());
+    result
+      .querySelector('[data-copy-result]')
+      ?.addEventListener('click', async () => {
+        const status = result.querySelector<HTMLElement>('[data-copy-status]');
+        try {
+          await navigator.clipboard.writeText(result.dataset.copyText ?? '');
+          if (status)
+            status.textContent =
+              'Result summary copied without your measurements.';
+        } catch {
+          if (status)
+            status.textContent =
+              'Copy is unavailable. Select the result text manually.';
+        }
+        if (status) status.hidden = false;
+      });
+  }
+</script>
+
+<style>
+  .error-summary {
+    margin-bottom: 1rem;
+    border: 2px solid var(--color-danger);
+    border-radius: 0.8rem;
+    padding: 1rem;
+  }
+  .field-error {
+    min-height: 1.3em;
+    margin: 0;
+    font-size: 0.88rem;
+  }
+  .equation-field {
+    margin-block: 1.2rem;
+  }
+  .result {
+    margin-top: 1.5rem;
+    box-shadow: none;
+  }
+  .result h3 {
+    font-size: clamp(1.8rem, 5vw, 3.2rem);
+  }
+  dl {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+    gap: 0.75rem;
+  }
+  dl div {
+    border-radius: 0.75rem;
+    padding: 1rem;
+    background: var(--color-surface-muted);
+  }
+  dt {
+    color: var(--color-ink-muted);
+  }
+  dd {
+    margin: 0.25rem 0 0;
+    font-size: 1.4rem;
+    font-weight: 800;
+  }
+</style>

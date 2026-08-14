@@ -1,0 +1,426 @@
+---
+import FaqList from '../../components/content/FaqList.astro';
+import AdSlot from '../../components/layout/AdSlot.astro';
+import Breadcrumbs from '../../components/layout/Breadcrumbs.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import {
+  curatedWorkouts,
+  getCuratedWorkout,
+  type CuratedWorkout,
+} from '../../data/curated-workouts';
+
+type Props = { workout?: CuratedWorkout };
+
+const { workout = getCuratedWorkout('no-equipment') } = Astro.props;
+const relatedWorkouts = workout.relatedSlugs
+  .map((slug) => curatedWorkouts.find((item) => item.slug === slug))
+  .filter((item): item is CuratedWorkout => Boolean(item));
+---
+
+<BaseLayout
+  title={workout.seoTitle}
+  description={workout.description}
+  path={`/workouts/${workout.slug}/`}
+>
+  <div class="container">
+    <Breadcrumbs
+      items={[
+        { label: 'Home', href: '/' },
+        { label: 'Workouts', href: '/workouts/' },
+        { label: workout.title },
+      ]}
+    />
+  </div>
+
+  <article>
+    <header class="container workout-hero section-sm">
+      <div class="hero-copy">
+        <p class="eyebrow">{workout.eyebrow}</p>
+        <h1>{workout.title}</h1>
+        <p class="lede">{workout.summary}</p>
+        <div class="button-row no-print">
+          <a class="button" href="/generate/">Match a workout to me</a>
+          <a class="button button-secondary" href="/quick-workout/"
+            >Use the quick builder</a
+          >
+        </div>
+      </div>
+      <dl class="card card-pad facts" aria-label="Workout overview">
+        <div><dt>Time</dt><dd>{workout.duration}</dd></div>
+        <div><dt>Equipment</dt><dd>{workout.equipment}</dd></div>
+        <div><dt>Space</dt><dd>{workout.space}</dd></div>
+        <div><dt>Level</dt><dd>{workout.level}</dd></div>
+        <div><dt>Format</dt><dd>{workout.format}</dd></div>
+      </dl>
+    </header>
+
+    <section
+      class="container section-sm intro-grid"
+      aria-labelledby="before-starting"
+    >
+      <div class="prose">
+        <h2 id="before-starting">Before starting</h2>
+        <p>
+          This is an editable example session, not an individualized
+          prescription. Read the whole plan, choose easier ranges when needed,
+          and stop if a movement causes pain, dizziness, or another concerning
+          symptom. See the <a href="/safety/">workout safety guidance</a> before training.
+        </p>
+        <h3>Set up the space</h3>
+        <ul>
+          {workout.setup.map((item) => <li>{item}</li>)}
+        </ul>
+      </div>
+      <aside class="card card-pad best-for" aria-labelledby="best-for-heading">
+        <h2 id="best-for-heading">A useful fit for</h2>
+        <ul>
+          {workout.bestFor.map((item) => <li>{item}</li>)}
+        </ul>
+      </aside>
+    </section>
+
+    <section class="section-sm plan-band" aria-labelledby="example-session">
+      <div class="container">
+        <p class="eyebrow">Example session</p>
+        <h2 id="example-session">Warm up, train, and cool down</h2>
+        <p class="lede">
+          The written doses are starting ranges. Take more rest or complete less
+          work when that keeps the movement deliberate.
+        </p>
+
+        <section class="plan-section" aria-labelledby="warmup-heading">
+          <h3 id="warmup-heading">Warm-up</h3>
+          <ol class="move-grid">
+            {
+              workout.warmup.map((move) => (
+                <li class="card card-pad move-card">
+                  <strong>{move.name}</strong>
+                  <span class="dose">{move.dose}</span>
+                  <p>{move.instruction}</p>
+                </li>
+              ))
+            }
+          </ol>
+        </section>
+
+        <section class="plan-section" aria-labelledby="main-work-heading">
+          <h3 id="main-work-heading">Main workout</h3>
+          <div class="block-list">
+            {
+              workout.blocks.map((block, blockIndex) => (
+                <section
+                  class="card card-pad workout-block"
+                  aria-labelledby={`block-${blockIndex}`}
+                >
+                  <p class="block-number">Block {blockIndex + 1}</p>
+                  <h3 id={`block-${blockIndex}`}>{block.heading}</h3>
+                  <p>{block.intro}</p>
+                  <p class="block-detail">
+                    <strong>{block.rounds}.</strong> {block.rest}
+                  </p>
+                  <ol>
+                    {block.moves.map((move) => (
+                      <li>
+                        <div class="move-heading">
+                          <strong>{move.name}</strong>
+                          <span class="dose">{move.dose}</span>
+                        </div>
+                        <p>{move.instruction}</p>
+                      </li>
+                    ))}
+                  </ol>
+                </section>
+              ))
+            }
+          </div>
+        </section>
+
+        <section class="plan-section" aria-labelledby="cooldown-heading">
+          <h3 id="cooldown-heading">Cooldown</h3>
+          <ol class="move-grid">
+            {
+              workout.cooldown.map((move) => (
+                <li class="card card-pad move-card">
+                  <strong>{move.name}</strong>
+                  <span class="dose">{move.dose}</span>
+                  <p>{move.instruction}</p>
+                </li>
+              ))
+            }
+          </ol>
+        </section>
+      </div>
+    </section>
+
+    <AdSlot placement={`workout-${workout.slug}-editorial`} />
+
+    <section
+      class="container section-sm guidance-grid"
+      aria-labelledby="adjust-session"
+    >
+      <div class="prose">
+        <h2 id="adjust-session">How to pace and progress it</h2>
+        <ul>
+          {workout.pacing.map((item) => <li>{item}</li>)}
+        </ul>
+      </div>
+      <div class="callout">
+        <h3>Match the constraints first</h3>
+        <p>
+          If this example conflicts with your equipment, space, movement
+          preferences, or available time, do not silently ignore the mismatch. <a
+            href="/generate/">Build a constraint-aware workout</a
+          >
+          instead.
+        </p>
+      </div>
+    </section>
+
+    <section class="container section-sm" aria-labelledby="adaptations-heading">
+      <h2 id="adaptations-heading">Practical adaptations</h2>
+      <div class="grid-cards">
+        {
+          workout.adaptations.map((adaptation) => (
+            <article class="card card-pad">
+              <h3>{adaptation.heading}</h3>
+              <p class="muted">{adaptation.copy}</p>
+            </article>
+          ))
+        }
+      </div>
+    </section>
+
+    <section
+      class="container section-sm limitations"
+      aria-labelledby="limitations-heading"
+    >
+      <div class="card card-pad prose">
+        <h2 id="limitations-heading">What this workout does not do</h2>
+        <ul>
+          {workout.limitations.map((item) => <li>{item}</li>)}
+        </ul>
+        <p>
+          WorkoutMatch is educational and organizational. It does not diagnose,
+          treat, rehabilitate, or promise a health outcome. Review the <a
+            href="/methodology/">programming methodology</a
+          > for how example sessions differ from personalized care.
+        </p>
+      </div>
+    </section>
+
+    <div class="narrow section-sm">
+      <FaqList
+        items={workout.faqs}
+        heading={`Questions about this ${workout.eyebrow.toLowerCase()}`}
+      />
+    </div>
+
+    <section class="container section-sm" aria-labelledby="related-heading">
+      <h2 id="related-heading">Try another practical format</h2>
+      <div class="grid-cards">
+        {
+          relatedWorkouts.map((item) => (
+            <article class="card card-pad related-card">
+              <h3>
+                <a href={`/workouts/${item.slug}/`}>{item.title}</a>
+              </h3>
+              <p class="muted">{item.summary}</p>
+              <p>
+                <a href={`/workouts/${item.slug}/`}>
+                  See the {item.duration.toLowerCase()} session
+                </a>
+              </p>
+            </article>
+          ))
+        }
+      </div>
+      <p class="directory-link">
+        <a href="/workouts/">Browse all curated workouts</a>
+      </p>
+    </section>
+  </article>
+</BaseLayout>
+
+<style>
+  .workout-hero,
+  .intro-grid,
+  .guidance-grid {
+    display: grid;
+    gap: clamp(1.5rem, 4vw, 3rem);
+  }
+
+  .hero-copy {
+    align-self: center;
+  }
+
+  .facts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    margin: 0;
+  }
+
+  .facts div:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+
+  dt {
+    color: var(--color-ink-muted);
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  dd {
+    margin: 0.15rem 0 0;
+    font-weight: 720;
+  }
+
+  .best-for h2 {
+    font-size: 1.5rem;
+  }
+
+  .best-for li + li,
+  .limitations li + li {
+    margin-top: 0.65rem;
+  }
+
+  .plan-band {
+    border-block: 1px solid var(--color-border);
+    background: color-mix(
+      in srgb,
+      var(--color-primary-soft) 50%,
+      var(--color-canvas)
+    );
+  }
+
+  .plan-section {
+    margin-top: clamp(2rem, 5vw, 3.5rem);
+  }
+
+  .move-grid,
+  .workout-block ol {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .move-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+    gap: 0.85rem;
+  }
+
+  .move-card {
+    display: grid;
+    align-content: start;
+    gap: 0.35rem;
+  }
+
+  .move-card p,
+  .workout-block p {
+    margin-block: 0.25rem 0;
+    color: var(--color-ink-muted);
+  }
+
+  .dose {
+    color: var(--color-primary-strong);
+    font-size: 0.9rem;
+    font-weight: 780;
+  }
+
+  .block-list {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .block-number {
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .block-detail {
+    margin-top: 0.75rem !important;
+    border-radius: 0.7rem;
+    padding: 0.7rem 0.8rem;
+    background: var(--color-surface-muted);
+    color: var(--color-ink) !important;
+  }
+
+  .workout-block ol {
+    margin-top: 1rem;
+    counter-reset: move;
+  }
+
+  .workout-block li {
+    position: relative;
+    border-top: 1px solid var(--color-border);
+    padding: 0.9rem 0 0.9rem 2.4rem;
+    counter-increment: move;
+  }
+
+  .workout-block li::before {
+    position: absolute;
+    top: 0.9rem;
+    left: 0;
+    display: grid;
+    width: 1.65rem;
+    height: 1.65rem;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--color-primary-soft);
+    color: var(--color-primary-strong);
+    content: counter(move);
+    font-size: 0.8rem;
+    font-weight: 800;
+  }
+
+  .move-heading {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.35rem 1rem;
+  }
+
+  .guidance-grid {
+    align-items: start;
+  }
+
+  .guidance-grid .callout h3 {
+    margin-top: 0;
+  }
+
+  .limitations > div {
+    max-width: none;
+    border-inline-start: 0.35rem solid var(--color-accent);
+  }
+
+  .related-card p:last-child,
+  .directory-link {
+    margin-bottom: 0;
+  }
+
+  .directory-link {
+    margin-top: 1.5rem;
+    font-weight: 750;
+  }
+
+  @media (min-width: 48rem) {
+    .workout-hero {
+      grid-template-columns: minmax(0, 1.5fr) minmax(18rem, 0.7fr);
+      align-items: start;
+    }
+
+    .intro-grid,
+    .guidance-grid {
+      grid-template-columns: minmax(0, 1.35fr) minmax(18rem, 0.65fr);
+    }
+
+    .block-list {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+</style>
