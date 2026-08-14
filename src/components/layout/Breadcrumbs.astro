@@ -1,7 +1,7 @@
 ---
 import { createHash } from 'node:crypto';
 import type { CspHash } from 'astro';
-import { absoluteUrl } from '../../config/site';
+import { absoluteUrl, sitePath } from '../../config/site';
 
 type Crumb = { label: string; href?: string };
 type Props = { items: Crumb[] };
@@ -29,7 +29,7 @@ Astro.csp?.insertScriptHash(jsonLdHash);
       items.map((item, index) => (
         <li>
           {item.href && index < items.length - 1 ? (
-            <a href={item.href}>{item.label}</a>
+            <a href={sitePath(item.href)}>{item.label}</a>
           ) : (
             <span
               aria-current={index === items.length - 1 ? 'page' : undefined}

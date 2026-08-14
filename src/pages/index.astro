@@ -43,8 +43,12 @@ const faqs = [
         experience, and movement preferences. No account or long setup required.
       </p>
       <div class="button-row hero-actions">
-        <a class="button" href="/generate/">Build my workout</a>
-        <a class="button button-secondary" href="/quick-workout/"
+        <a class="button" href={`${import.meta.env.BASE_URL}generate/`}
+          >Build my workout</a
+        >
+        <a
+          class="button button-secondary"
+          href={`${import.meta.env.BASE_URL}quick-workout/`}
           >Get a quick workout</a
         >
       </div>
@@ -123,7 +127,9 @@ const faqs = [
         <p class="eyebrow">Ready-made examples</p>
         <h2 id="situations-heading">Start with a familiar situation</h2>
       </div>
-      <a href="/workouts/">Browse all eight curated workouts</a>
+      <a href={`${import.meta.env.BASE_URL}workouts/`}
+        >Browse all eight curated workouts</a
+      >
     </div>
     <div class="workout-grid">
       {
@@ -131,7 +137,9 @@ const faqs = [
           <article class="card card-pad">
             <p class="eyebrow">{workout.duration}</p>
             <h3>
-              <a href={`/workouts/${workout.slug}/`}>{workout.title}</a>
+              <a href={`${import.meta.env.BASE_URL}workouts/${workout.slug}/`}>
+                {workout.title}
+              </a>
             </h3>
             <p class="muted">{workout.summary}</p>
             <ul class="tag-list" aria-label={`${workout.title} details`}>
@@ -159,26 +167,38 @@ const faqs = [
     </div>
     <div class="grid-cards">
       <article class="card card-pad">
-        <h3><a href="/exercises/">Exercise library</a></h3>
+        <h3>
+          <a href={`${import.meta.env.BASE_URL}exercises/`}>Exercise library</a>
+        </h3>
         <p class="muted">
           Search detailed instructions, common mistakes, variations, and
           equipment needs.
         </p>
       </article>
       <article class="card card-pad">
-        <h3><a href="/timers/interval/">Interval timer</a></h3>
+        <h3>
+          <a href={`${import.meta.env.BASE_URL}timers/interval/`}
+            >Interval timer</a
+          >
+        </h3>
         <p class="muted">
           Run work and rest intervals with visible, keyboard-usable controls.
         </p>
       </article>
       <article class="card card-pad">
-        <h3><a href="/calculators/">Adult calculators</a></h3>
+        <h3>
+          <a href={`${import.meta.env.BASE_URL}calculators/`}
+            >Adult calculators</a
+          >
+        </h3>
         <p class="muted">
           Use BMI, BMR, and TDEE estimates with formulas and limitations shown.
         </p>
       </article>
       <article class="card card-pad">
-        <h3><a href="/my-progress/">Local progress</a></h3>
+        <h3>
+          <a href={`${import.meta.env.BASE_URL}my-progress/`}>Local progress</a>
+        </h3>
         <p class="muted">
           Save, export, import, or clear workout records in this browser
           profile.
@@ -200,11 +220,12 @@ const faqs = [
         WorkoutMatch does not diagnose pain, prescribe rehabilitation, estimate
         calories burned, or promise health outcomes. It is designed for adults
         choosing a general workout. Read our
-        <a href="/methodology/">methodology</a>, <a href="/safety/"
-          >safety guidance</a
+        <a href={`${import.meta.env.BASE_URL}methodology/`}>methodology</a>, <a
+          href={`${import.meta.env.BASE_URL}safety/`}>safety guidance</a
         >, and
-        <a href="/privacy/">plain-language privacy explanation</a> before relying
-        on a tool.
+        <a href={`${import.meta.env.BASE_URL}privacy/`}
+          >plain-language privacy explanation</a
+        > before relying on a tool.
       </p>
     </div>
   </section>

@@ -44,7 +44,11 @@ const labelFor = (value: string): string =>
   <article>
     <div class="card-heading">
       <p class="pattern">{labelFor(exercise.movementPattern)}</p>
-      <h2><a href={`/exercises/${exercise.slug}/`}>{exercise.name}</a></h2>
+      <h2>
+        <a href={`${import.meta.env.BASE_URL}exercises/${exercise.slug}/`}
+          >{exercise.name}</a
+        >
+      </h2>
     </div>
     <p>{exercise.summary}</p>
     {
@@ -60,7 +64,7 @@ const labelFor = (value: string): string =>
       <li class="tag">{labelFor(exercise.position)}</li>
     </ul>
     <p class="details-link">
-      <a href={`/exercises/${exercise.slug}/`}
+      <a href={`${import.meta.env.BASE_URL}exercises/${exercise.slug}/`}
         >View instructions and variations</a
       >
     </p>

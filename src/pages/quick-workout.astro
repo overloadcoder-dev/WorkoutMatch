@@ -41,9 +41,10 @@ const faqs = [
   <section class="narrow section prose">
     <h2>When to use the full builder</h2>
     <p>
-      Use the <a href="/generate/">full workout generator</a> when you need standing-only
-      or no-floor sessions, very small spaces, a specific goal, or conservative movement-characteristic
-      filters.
+      Use the <a href={`${import.meta.env.BASE_URL}generate/`}
+        >full workout generator</a
+      > when you need standing-only or no-floor sessions, very small spaces, a specific
+      goal, or conservative movement-characteristic filters.
     </p>
     <FaqList items={faqs} />
   </section>

@@ -236,7 +236,9 @@ const sensitivities = [
     {quick && <input type="hidden" name="space" value="medium" />}
     <p class="muted safety-copy">
       Choose ranges you can control and stop any movement that feels wrong for
-      you. Read the <a href="/safety/">safety guide</a>.
+      you. Read the <a href={`${import.meta.env.BASE_URL}safety/`}
+        >safety guide</a
+      >.
     </p>
     <button class="button generate-button" type="submit"
       >Generate workout</button
@@ -454,7 +456,7 @@ const sensitivities = [
           .find(Boolean);
         if (easier) {
           const link = document.createElement('a');
-          link.href = `/exercises/${easier.slug}/`;
+          link.href = `${import.meta.env.BASE_URL}exercises/${easier.slug}/`;
           link.textContent = `Easier: ${easier.name}`;
           wrap.append(link);
         }
@@ -462,7 +464,7 @@ const sensitivities = [
           if (wrap.childNodes.length)
             wrap.append(document.createTextNode(' · '));
           const link = document.createElement('a');
-          link.href = `/exercises/${harder.slug}/`;
+          link.href = `${import.meta.env.BASE_URL}exercises/${harder.slug}/`;
           link.textContent = `Harder: ${harder.name}`;
           wrap.append(link);
         }
@@ -478,7 +480,7 @@ const sensitivities = [
         order.textContent = `Movement ${index + 1}`;
         const title = document.createElement('h4');
         const link = document.createElement('a');
-        link.href = `/exercises/${item.exercise.slug}/`;
+        link.href = `${import.meta.env.BASE_URL}exercises/${item.exercise.slug}/`;
         link.textContent = item.exercise.name;
         title.append(link);
         const summary = document.createElement('p');
@@ -715,7 +717,10 @@ const sensitivities = [
               return;
             }
           }
-          const url = new URL('/generate/', window.location.origin);
+          const url = new URL(
+            `${import.meta.env.BASE_URL}generate/`,
+            window.location.origin,
+          );
           url.search = buildSafeShareQuery(workout);
           try {
             await navigator.clipboard.writeText(url.toString());
@@ -733,7 +738,9 @@ const sensitivities = [
           if (!workout) return;
           try {
             localStorage.setItem('wm-guided-workout', JSON.stringify(workout));
-            window.location.assign('/workout/player/');
+            window.location.assign(
+              `${import.meta.env.BASE_URL}workout/player/`,
+            );
           } catch {
             showResultStatus(
               'Guided mode could not open because temporary browser storage is unavailable.',

@@ -39,8 +39,12 @@ const relatedWorkouts = workout.relatedSlugs
         <h1>{workout.title}</h1>
         <p class="lede">{workout.summary}</p>
         <div class="button-row no-print">
-          <a class="button" href="/generate/">Match a workout to me</a>
-          <a class="button button-secondary" href="/quick-workout/"
+          <a class="button" href={`${import.meta.env.BASE_URL}generate/`}
+            >Match a workout to me</a
+          >
+          <a
+            class="button button-secondary"
+            href={`${import.meta.env.BASE_URL}quick-workout/`}
             >Use the quick builder</a
           >
         </div>
@@ -64,7 +68,9 @@ const relatedWorkouts = workout.relatedSlugs
           This is an editable example session, not an individualized
           prescription. Read the whole plan, choose easier ranges when needed,
           and stop if a movement causes pain, dizziness, or another concerning
-          symptom. See the <a href="/safety/">workout safety guidance</a> before training.
+          symptom. See the <a href={`${import.meta.env.BASE_URL}safety/`}
+            >workout safety guidance</a
+          > before training.
         </p>
         <h3>Set up the space</h3>
         <ul>
@@ -169,7 +175,8 @@ const relatedWorkouts = workout.relatedSlugs
         <p>
           If this example conflicts with your equipment, space, movement
           preferences, or available time, do not silently ignore the mismatch. <a
-            href="/generate/">Build a constraint-aware workout</a
+            href={`${import.meta.env.BASE_URL}generate/`}
+            >Build a constraint-aware workout</a
           >
           instead.
         </p>
@@ -202,7 +209,8 @@ const relatedWorkouts = workout.relatedSlugs
         <p>
           WorkoutMatch is educational and organizational. It does not diagnose,
           treat, rehabilitate, or promise a health outcome. Review the <a
-            href="/methodology/">programming methodology</a
+            href={`${import.meta.env.BASE_URL}methodology/`}
+            >programming methodology</a
           > for how example sessions differ from personalized care.
         </p>
       </div>
@@ -222,11 +230,13 @@ const relatedWorkouts = workout.relatedSlugs
           relatedWorkouts.map((item) => (
             <article class="card card-pad related-card">
               <h3>
-                <a href={`/workouts/${item.slug}/`}>{item.title}</a>
+                <a href={`${import.meta.env.BASE_URL}workouts/${item.slug}/`}>
+                  {item.title}
+                </a>
               </h3>
               <p class="muted">{item.summary}</p>
               <p>
-                <a href={`/workouts/${item.slug}/`}>
+                <a href={`${import.meta.env.BASE_URL}workouts/${item.slug}/`}>
                   See the {item.duration.toLowerCase()} session
                 </a>
               </p>
@@ -235,7 +245,9 @@ const relatedWorkouts = workout.relatedSlugs
         }
       </div>
       <p class="directory-link">
-        <a href="/workouts/">Browse all curated workouts</a>
+        <a href={`${import.meta.env.BASE_URL}workouts/`}
+          >Browse all curated workouts</a
+        >
       </p>
     </section>
   </article>

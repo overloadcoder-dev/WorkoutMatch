@@ -1,5 +1,6 @@
 ---
 import Breadcrumbs from '../../components/layout/Breadcrumbs.astro';
+import { sitePath } from '../../config/site';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 
 const calculators = [
@@ -47,10 +48,10 @@ const calculators = [
         calculators.map((calculator) => (
           <article class="card card-pad">
             <h3>
-              <a href={calculator.href}>{calculator.name}</a>
+              <a href={sitePath(calculator.href)}>{calculator.name}</a>
             </h3>
             <p class="muted">{calculator.copy}</p>
-            <a class="button button-secondary" href={calculator.href}>
+            <a class="button button-secondary" href={sitePath(calculator.href)}>
               Open {calculator.name}
             </a>
           </article>

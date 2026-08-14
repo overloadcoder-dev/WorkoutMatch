@@ -7,7 +7,9 @@ const year = new Date().getUTCFullYear();
 <footer class="site-footer no-print">
   <div class="container footer-grid">
     <div>
-      <a class="footer-brand" href="/">{SITE_CONFIG.name}</a>
+      <a class="footer-brand" href={`${import.meta.env.BASE_URL}`}
+        >{SITE_CONFIG.name}</a
+      >
       <p>
         Practical workouts matched to the time, space, and equipment you have.
       </p>
@@ -18,20 +20,33 @@ const year = new Date().getUTCFullYear();
     <nav aria-label="Product">
       <h2>Use WorkoutMatch</h2>
       <ul>
-        <li><a href="/generate/">Build a workout</a></li>
-        <li><a href="/quick-workout/">Quick workout</a></li>
-        <li><a href="/exercises/">Exercise library</a></li>
-        <li><a href="/timers/interval/">Interval timer</a></li>
+        <li>
+          <a href={`${import.meta.env.BASE_URL}generate/`}>Build a workout</a>
+        </li>
+        <li>
+          <a href={`${import.meta.env.BASE_URL}quick-workout/`}>Quick workout</a
+          >
+        </li>
+        <li>
+          <a href={`${import.meta.env.BASE_URL}exercises/`}>Exercise library</a>
+        </li>
+        <li>
+          <a href={`${import.meta.env.BASE_URL}timers/interval/`}
+            >Interval timer</a
+          >
+        </li>
       </ul>
     </nav>
     <nav aria-label="Information">
       <h2>Information</h2>
       <ul>
-        <li><a href="/methodology/">Methodology</a></li>
-        <li><a href="/safety/">Safety</a></li>
-        <li><a href="/privacy/">Privacy</a></li>
-        <li><a href="/terms/">Terms</a></li>
-        <li><a href="/about/">About</a></li>
+        <li>
+          <a href={`${import.meta.env.BASE_URL}methodology/`}>Methodology</a>
+        </li>
+        <li><a href={`${import.meta.env.BASE_URL}safety/`}>Safety</a></li>
+        <li><a href={`${import.meta.env.BASE_URL}privacy/`}>Privacy</a></li>
+        <li><a href={`${import.meta.env.BASE_URL}terms/`}>Terms</a></li>
+        <li><a href={`${import.meta.env.BASE_URL}about/`}>About</a></li>
       </ul>
     </nav>
   </div>

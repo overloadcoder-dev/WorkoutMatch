@@ -1,5 +1,14 @@
 export type Locale = 'en';
 
+const basePath = import.meta.env.BASE_URL.endsWith('/')
+  ? import.meta.env.BASE_URL
+  : `${import.meta.env.BASE_URL}/`;
+
+export const sitePath = (path: string): string => {
+  if (/^(?:[a-z]+:|\/\/|#)/i.test(path)) return path;
+  return `${basePath}${path.replace(/^\/+/, '')}`;
+};
+
 export const SITE_CONFIG = {
   name: 'WorkoutMatch',
   shortName: 'WorkoutMatch',
@@ -23,4 +32,4 @@ export const SITE_CONFIG = {
 } as const;
 
 export const absoluteUrl = (path: string): string =>
-  new URL(path, SITE_CONFIG.siteUrl).toString();
+  new URL(sitePath(path), SITE_CONFIG.siteUrl).toString();

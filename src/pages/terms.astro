@@ -34,7 +34,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         You are responsible for deciding whether to use a feature, checking your
         surroundings and equipment, choosing an appropriate effort, and stopping
         when needed. See the
-        <a href="/safety/">safety guidance</a> before exercising.
+        <a href={`${import.meta.env.BASE_URL}safety/`}>safety guidance</a> before
+        exercising.
       </p>
     </section>
 
@@ -59,8 +60,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         or suitable for a particular decision.
       </p>
       <p>
-        Read the <a href="/methodology/">methodology and source limitations</a> before
-        interpreting results.
+        Read the <a href={`${import.meta.env.BASE_URL}methodology/`}
+          >methodology and source limitations</a
+        > before interpreting results.
       </p>
     </section>
 
@@ -71,8 +73,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         when you choose to save it. Local data can be blocked, cleared,
         corrupted, or lost, and is not backed up or synchronized by
         WorkoutMatch. You are responsible for exported files and for reviewing
-        an import before confirming it. Read the <a href="/privacy/"
-          >privacy page</a
+        an import before confirming it. Read the <a
+          href={`${import.meta.env.BASE_URL}privacy/`}>privacy page</a
         > for the complete data boundary.
       </p>
     </section>

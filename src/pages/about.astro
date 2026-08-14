@@ -39,12 +39,14 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         selecting exercises that violate those choices.
       </p>
       <p>
-        The shortest route is the <a href="/quick-workout/"
+        The shortest route is the <a
+          href={`${import.meta.env.BASE_URL}quick-workout/`}
           >quick workout builder</a
         >. The
-        <a href="/generate/">full generator</a> adds goal, experience, detailed environment
-        needs, muscle focus, and optional movements to avoid today. Eight <a
-          href="/workouts/">curated workout pages</a
+        <a href={`${import.meta.env.BASE_URL}generate/`}>full generator</a> adds goal,
+        experience, detailed environment needs, muscle focus, and optional movements
+        to avoid today. Eight <a href={`${import.meta.env.BASE_URL}workouts/`}
+          >curated workout pages</a
         >
         provide substantial static examples when a familiar scenario is enough.
       </p>
@@ -104,8 +106,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         </li>
       </ul>
       <p>
-        Read <a href="/methodology/">how the rules and equations work</a> and
-        <a href="/safety/"
+        Read <a href={`${import.meta.env.BASE_URL}methodology/`}
+          >how the rules and equations work</a
+        > and
+        <a href={`${import.meta.env.BASE_URL}safety/`}
           >how to use general exercise information conservatively</a
         >.
       </p>

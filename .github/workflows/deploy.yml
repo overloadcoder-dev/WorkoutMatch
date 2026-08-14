@@ -16,6 +16,10 @@ concurrency:
 
 jobs:
   deploy:
+    env:
+      PUBLIC_SITE_URL: https://overloadcoder-dev.github.io
+      PUBLIC_BASE_PATH: /WorkoutMatch
+
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -44,18 +48,11 @@ jobs:
       - name: Install browser for end-to-end checks
         run: npx playwright install --with-deps chromium
 
-      - name: Validate the production origin
-        env:
-          PUBLIC_SITE_URL: ${{ vars.PUBLIC_SITE_URL }}
-        run: node --input-type=module -e "const raw = process.env.PUBLIC_SITE_URL; if (!raw) throw new Error('Set the PUBLIC_SITE_URL repository variable before deploying.'); const url = new URL(raw); if (url.pathname !== '/') throw new Error('This build currently requires a domain-root URL or custom domain, not a GitHub project subpath.');"
-
       - name: Build for GitHub Pages
-        env:
-          PUBLIC_SITE_URL: ${{ vars.PUBLIC_SITE_URL }}
         run: npm run build
 
       - name: Run browser and accessibility checks
-        run: npx playwright test
+        run: node tests/e2e/run.mjs
 
       - name: Configure Pages
         uses: actions/configure-pages@v5

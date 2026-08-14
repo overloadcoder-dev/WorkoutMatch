@@ -22,16 +22,36 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         saved workout data has not been changed by reaching this page.
       </p>
       <div class="button-row">
-        <a class="button" href="/quick-workout/">Get a quick workout</a>
-        <a class="button button-secondary" href="/">Go to the home page</a>
+        <a class="button" href={`${import.meta.env.BASE_URL}quick-workout/`}
+          >Get a quick workout</a
+        >
+        <a class="button button-secondary" href={`${import.meta.env.BASE_URL}`}
+          >Go to the home page</a
+        >
       </div>
       <nav aria-label="Useful alternatives">
         <h2>Or continue here</h2>
         <ul>
-          <li><a href="/generate/">Build a constraint-aware workout</a></li>
-          <li><a href="/workouts/">Browse curated workouts</a></li>
-          <li><a href="/exercises/">Search the exercise library</a></li>
-          <li><a href="/calculators/">Open the adult calculators</a></li>
+          <li>
+            <a href={`${import.meta.env.BASE_URL}generate/`}
+              >Build a constraint-aware workout</a
+            >
+          </li>
+          <li>
+            <a href={`${import.meta.env.BASE_URL}workouts/`}
+              >Browse curated workouts</a
+            >
+          </li>
+          <li>
+            <a href={`${import.meta.env.BASE_URL}exercises/`}
+              >Search the exercise library</a
+            >
+          </li>
+          <li>
+            <a href={`${import.meta.env.BASE_URL}calculators/`}
+              >Open the adult calculators</a
+            >
+          </li>
         </ul>
       </nav>
     </div>

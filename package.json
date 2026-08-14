@@ -16,9 +16,9 @@
     "format:check": "prettier --check .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "npm run build && playwright test",
-    "test:a11y": "npm run build && playwright test --grep @a11y",
-    "verify": "npm run check && npm run lint && npm run test && npm run build && playwright test"
+    "test:e2e": "npm run build && node tests/e2e/run.mjs",
+    "test:a11y": "npm run build && node tests/e2e/run.mjs --grep @a11y",
+    "verify": "npm run check && npm run lint && npm run test && npm run build && node tests/e2e/run.mjs"
   },
   "dependencies": {
     "@astrojs/sitemap": "3.7.3",

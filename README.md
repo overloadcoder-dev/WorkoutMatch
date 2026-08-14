@@ -124,19 +124,21 @@ npm run dev
 
 Astro prints the local URL, normally `http://localhost:4321/`.
 
-### `PUBLIC_SITE_URL`
+### Public URL configuration
 
-`PUBLIC_SITE_URL` is the only environment variable currently used by the app.
-It is public configuration, not a secret. Set it to the deployed origin, without
-a trailing route:
+`PUBLIC_SITE_URL` and `PUBLIC_BASE_PATH` are public build configuration, not
+secrets. Set the first to the deployed origin. Keep the base path at `/` for a
+root domain, or set it to the repository path for a project site:
 
 ```dotenv
 PUBLIC_SITE_URL=https://www.example.com
+PUBLIC_BASE_PATH=/
 ```
 
 The value is consumed at build time by `astro.config.mjs` and
-`src/config/site.ts` for canonical URLs, Open Graph URLs, structured data,
-`robots.txt`, and sitemap generation. If it is omitted, the build uses
+`src/config/site.ts` for application links, assets, canonical URLs, Open Graph
+URLs, structured data, `robots.txt`, and sitemap generation. If the origin is
+omitted, the build uses
 `https://workoutmatch.example`; that fallback is useful locally but must not be
 published as a real canonical origin.
 
@@ -538,7 +540,8 @@ Automated tests do not replace manual review. Before a production release:
 
 ## Deployment
 
-For every host, build with the production canonical origin and publish `dist/`:
+For every host, build with the production canonical origin and base path, then
+publish `dist/`:
 
 ```sh
 PUBLIC_SITE_URL=https://www.example.com npm run build
@@ -548,6 +551,7 @@ PowerShell:
 
 ```powershell
 $env:PUBLIC_SITE_URL = 'https://www.example.com'
+$env:PUBLIC_BASE_PATH = '/'
 npm run build
 ```
 
@@ -585,25 +589,17 @@ the build-generated policy.
 
 ### GitHub Pages
 
-The current application is safe to deploy at an origin root, such as a user or
-organization Pages site (`https://username.github.io/`) or a custom domain. Set
-`PUBLIC_SITE_URL` to that root, build `dist/`, and deploy it with GitHub Pages
-Actions.
+The checked-in `.github/workflows/deploy.yml` is configured for this repository:
 
-**Project-site subpaths are not supported out of the box.** The repository uses
-root-relative application links and assets, and neither `astro.config.mjs` nor
-the manifest currently defines a repository base. Setting
-`PUBLIC_SITE_URL=https://username.github.io/repository/` alone is insufficient:
-leading `/...` URLs still resolve from `github.io/`, not the repository folder.
-Before using a project site, add and test an Astro `base`, make links/assets,
-manifest start URL, canonicals, sitemap, and browser redirects base-aware, and
-run the complete Playwright suite against that subpath. A root custom domain is
-the simpler supported deployment.
+- Origin: `https://overloadcoder-dev.github.io`
+- Base path: `/WorkoutMatch`
+- Public URL: `https://overloadcoder-dev.github.io/WorkoutMatch/`
 
-The checked-in `.github/workflows/deploy.yml` supports the domain-root case. Set
-the repository Actions variable `PUBLIC_SITE_URL` before running it. The workflow
-rejects a URL whose pathname is not `/`, then runs check, lint, unit, build,
-browser, and accessibility coverage before deploying `dist/`.
+No Actions variable is required. A push to `main` runs static checks, unit
+tests, a production build, and browser/accessibility coverage against the
+project-site path before deploying `dist/`. If the repository is renamed or a
+custom domain is added, update `PUBLIC_SITE_URL` and `PUBLIC_BASE_PATH` in the
+workflow together.
 
 GitHub Pages does not apply the Netlify/Cloudflare `_headers` file. If the full
 response-header policy is required, place a configurable CDN/proxy in front of

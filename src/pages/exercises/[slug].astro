@@ -147,8 +147,12 @@ const hasPosterOnly = Boolean(poster && !hasVideo);
           )
         }
         <div class="button-row no-print">
-          <a class="button" href="/generate/">Build a matched workout</a>
-          <a class="button button-secondary" href="/exercises/"
+          <a class="button" href={`${import.meta.env.BASE_URL}generate/`}
+            >Build a matched workout</a
+          >
+          <a
+            class="button button-secondary"
+            href={`${import.meta.env.BASE_URL}exercises/`}
             >Back to all exercises</a
           >
         </div>
@@ -310,7 +314,9 @@ const hasPosterOnly = Boolean(poster && !hasVideo);
         <p>
           Stop if this movement causes pain, dizziness, or another concerning
           symptom. WorkoutMatch does not diagnose or rehabilitate injuries. Read
-          the <a href="/safety/">general workout safety guidance</a>.
+          the <a href={`${import.meta.env.BASE_URL}safety/`}
+            >general workout safety guidance</a
+          >.
         </p>
       </div>
     </section>
@@ -353,7 +359,11 @@ const hasPosterOnly = Boolean(poster && !hasVideo);
                 <ul>
                   {easierVariations.map((item) => (
                     <li data-exercise-id={item.id}>
-                      <a href={`/exercises/${item.slug}/`}>{item.name}</a>
+                      <a
+                        href={`${import.meta.env.BASE_URL}exercises/${item.slug}/`}
+                      >
+                        {item.name}
+                      </a>
                     </li>
                   ))}
                 </ul>
@@ -371,7 +381,11 @@ const hasPosterOnly = Boolean(poster && !hasVideo);
                 <ul>
                   {harderVariations.map((item) => (
                     <li data-exercise-id={item.id}>
-                      <a href={`/exercises/${item.slug}/`}>{item.name}</a>
+                      <a
+                        href={`${import.meta.env.BASE_URL}exercises/${item.slug}/`}
+                      >
+                        {item.name}
+                      </a>
                     </li>
                   ))}
                 </ul>
@@ -389,7 +403,11 @@ const hasPosterOnly = Boolean(poster && !hasVideo);
                 <ul>
                   {replacements.map((item) => (
                     <li data-exercise-id={item.id}>
-                      <a href={`/exercises/${item.slug}/`}>{item.name}</a>
+                      <a
+                        href={`${import.meta.env.BASE_URL}exercises/${item.slug}/`}
+                      >
+                        {item.name}
+                      </a>
                     </li>
                   ))}
                 </ul>
@@ -416,11 +434,17 @@ const hasPosterOnly = Boolean(poster && !hasVideo);
           relatedWorkouts.map((workout) => (
             <article class="card card-pad related-workout">
               <h3>
-                <a href={`/workouts/${workout.slug}/`}>{workout.title}</a>
+                <a
+                  href={`${import.meta.env.BASE_URL}workouts/${workout.slug}/`}
+                >
+                  {workout.title}
+                </a>
               </h3>
               <p class="muted">{workout.summary}</p>
               <p>
-                <a href={`/workouts/${workout.slug}/`}>
+                <a
+                  href={`${import.meta.env.BASE_URL}workouts/${workout.slug}/`}
+                >
                   View the complete session
                 </a>
               </p>
@@ -429,7 +453,9 @@ const hasPosterOnly = Boolean(poster && !hasVideo);
         }
       </div>
       <p class="directory-link">
-        <a href="/workouts/">Browse all curated workouts</a>
+        <a href={`${import.meta.env.BASE_URL}workouts/`}
+          >Browse all curated workouts</a
+        >
       </p>
     </section>
 

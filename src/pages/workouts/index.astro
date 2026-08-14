@@ -34,8 +34,12 @@ import { curatedWorkouts } from '../../data/curated-workouts';
         together.
       </p>
       <div class="button-row">
-        <a class="button" href="/generate/">Build my workout</a>
-        <a class="button button-secondary" href="/quick-workout/">Quick match</a
+        <a class="button" href={`${import.meta.env.BASE_URL}generate/`}
+          >Build my workout</a
+        >
+        <a
+          class="button button-secondary"
+          href={`${import.meta.env.BASE_URL}quick-workout/`}>Quick match</a
         >
       </div>
     </aside>
@@ -50,7 +54,11 @@ import { curatedWorkouts } from '../../data/curated-workouts';
             <div class="card-pad">
               <p class="eyebrow">{workout.eyebrow}</p>
               <h3>
-                <a href={`/workouts/${workout.slug}/`}>{workout.title}</a>
+                <a
+                  href={`${import.meta.env.BASE_URL}workouts/${workout.slug}/`}
+                >
+                  {workout.title}
+                </a>
               </h3>
               <p class="muted">{workout.summary}</p>
               <dl>
@@ -74,7 +82,10 @@ import { curatedWorkouts } from '../../data/curated-workouts';
                 </div>
               </dl>
             </div>
-            <a class="card-link" href={`/workouts/${workout.slug}/`}>
+            <a
+              class="card-link"
+              href={`${import.meta.env.BASE_URL}workouts/${workout.slug}/`}
+            >
               Read the complete session <span aria-hidden="true">→</span>
             </a>
           </article>
@@ -95,9 +106,11 @@ import { curatedWorkouts } from '../../data/curated-workouts';
         Start with the constraint that would otherwise stop the session:
         available equipment, staying quiet, avoiding jumps, staying upright, or
         a strict time limit. Then read the setup and limitations before
-        beginning. The <a href="/exercises/">exercise library</a> has detailed movement
-        instructions, while the <a href="/safety/">safety page</a> explains when a
-        general workout is not enough.
+        beginning. The <a href={`${import.meta.env.BASE_URL}exercises/`}
+          >exercise library</a
+        > has detailed movement instructions, while the <a
+          href={`${import.meta.env.BASE_URL}safety/`}>safety page</a
+        > explains when a general workout is not enough.
       </p>
       <p>
         The examples are not ranked and they do not promise a particular health
@@ -109,10 +122,10 @@ import { curatedWorkouts } from '../../data/curated-workouts';
     <div class="callout">
       <h3>Curated page or generator?</h3>
       <p>
-        Use a page when one scenario closely fits. Use the <a href="/generate/"
-          >full generator</a
+        Use a page when one scenario closely fits. Use the <a
+          href={`${import.meta.env.BASE_URL}generate/`}>full generator</a
         > when several constraints must work together, or the <a
-          href="/quick-workout/">quick generator</a
+          href={`${import.meta.env.BASE_URL}quick-workout/`}>quick generator</a
         > when duration, equipment, focus, and quiet/no-jumping are enough.
       </p>
     </div>

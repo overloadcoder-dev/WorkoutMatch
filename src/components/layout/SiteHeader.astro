@@ -1,5 +1,5 @@
 ---
-import { SITE_CONFIG } from '../../config/site';
+import { sitePath, SITE_CONFIG } from '../../config/site';
 
 const navItems = [
   { href: '/generate/', label: 'Build a workout' },
@@ -13,7 +13,11 @@ const navItems = [
 
 <header class="site-header no-print">
   <div class="container header-inner">
-    <a class="brand" href="/" aria-label={`${SITE_CONFIG.name} home`}>
+    <a
+      class="brand"
+      href={`${import.meta.env.BASE_URL}`}
+      aria-label={`${SITE_CONFIG.name} home`}
+    >
       <span aria-hidden="true" class="brand-mark">WM</span>
       <span>{SITE_CONFIG.name}</span>
     </a>
@@ -24,7 +28,7 @@ const navItems = [
           {
             navItems.map(({ href, label }) => (
               <li>
-                <a href={href}>{label}</a>
+                <a href={sitePath(href)}>{label}</a>
               </li>
             ))
           }

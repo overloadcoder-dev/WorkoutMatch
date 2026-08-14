@@ -1,17 +1,18 @@
 import { expect, test } from '@playwright/test';
+import { sitePath } from './site-path';
 
 test.describe('static navigation and themes', () => {
   test('home exposes the primary paths and persists an explicit theme', async ({
     page,
   }) => {
-    await page.goto('/');
+    await page.goto(sitePath('/'));
     await expect(page).toHaveTitle(/^WorkoutMatch$/);
     await expect(page.getByRole('heading', { level: 1 })).toContainText(
       'Choose what you have',
     );
     await expect(
       page.getByRole('link', { name: 'Build my workout' }),
-    ).toHaveAttribute('href', '/generate/');
+    ).toHaveAttribute('href', sitePath('/generate/'));
     await page.getByLabel('Theme').selectOption('dark');
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
     await page.reload();
@@ -23,7 +24,7 @@ test.describe('static navigation and themes', () => {
   }) => {
     const context = await browser.newContext({ javaScriptEnabled: false });
     const page = await context.newPage();
-    await page.goto('/');
+    await page.goto(sitePath('/'));
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
     await expect(
       page.getByText('From constraints to a usable session'),
@@ -37,7 +38,7 @@ test.describe('static navigation and themes', () => {
   test('missing routes render the useful static 404 document', async ({
     page,
   }) => {
-    const response = await page.goto('/this-route-does-not-exist/');
+    const response = await page.goto(sitePath('/this-route-does-not-exist/'));
     // Astro preview serves the custom 404 document with a real 404 status.
     expect(response?.status()).toBe(404);
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(
@@ -55,7 +56,7 @@ test.describe('workout builders', () => {
     context,
   }) => {
     await context.grantPermissions(['clipboard-read', 'clipboard-write']);
-    await page.goto('/generate/');
+    await page.goto(sitePath('/generate/'));
     const form = page.locator('#full-generator-form');
     await form.getByLabel('One dumbbell').check();
     await form.getByLabel('Bodyweight / no equipment').uncheck();
@@ -113,7 +114,7 @@ test.describe('workout builders', () => {
     await expect(result.locator('[data-result-status]')).toContainText(
       'saved in this browser',
     );
-    await page.goto('/my-progress/');
+    await page.goto(sitePath('/my-progress/'));
     await expect(
       page.locator('#saved-plans-list').getByRole('heading', { level: 3 }),
     ).toHaveText(workoutTitle ?? '');
@@ -122,7 +123,7 @@ test.describe('workout builders', () => {
   test('quick generator uses the shared engine and creates a workout', async ({
     page,
   }) => {
-    await page.goto('/quick-workout/');
+    await page.goto(sitePath('/quick-workout/'));
     await page.locator('#quick-generator-form').getByLabel('10 min').check();
     await page
       .locator('#quick-generator-form')
@@ -145,7 +146,7 @@ test.describe('workout builders', () => {
   test('impossible constraints return an actionable error', async ({
     page,
   }) => {
-    await page.goto('/generate/');
+    await page.goto(sitePath('/generate/'));
     const form = page.locator('#full-generator-form');
     await form.getByLabel('Resistance band').check();
     await form.getByLabel('Bodyweight / no equipment').uncheck();
@@ -167,7 +168,7 @@ test.describe('workout builders', () => {
 
 test.describe('calculators', () => {
   test('BMI validates, calculates, and resets', async ({ page }) => {
-    await page.goto('/calculators/bmi/');
+    await page.goto(sitePath('/calculators/bmi/'));
     await page.getByRole('button', { name: 'Calculate BMI' }).click();
     await expect(page.locator('[data-error-summary]')).toBeVisible();
     await page.getByLabel('Weight in kilograms').fill('70');
@@ -185,7 +186,7 @@ test.describe('calculators', () => {
   test('TDEE shows the formula and neighboring-factor range', async ({
     page,
   }) => {
-    await page.goto('/calculators/tdee/');
+    await page.goto(sitePath('/calculators/tdee/'));
     await page.getByLabel('Weight in kilograms').fill('70');
     await page.getByLabel('Height in centimetres').fill('175');
     await page.getByLabel('Age in years').fill('35');
@@ -202,7 +203,9 @@ test.describe('exercise library', () => {
   test('search, filters, URL restoration, empty state, and clear all work', async ({
     page,
   }) => {
-    await page.goto('/exercises/?q=squat&equipment=none&difficulty=beginner');
+    await page.goto(
+      sitePath('/exercises/?q=squat&equipment=none&difficulty=beginner'),
+    );
     await expect(page.getByLabel('Search the library')).toHaveValue('squat');
     await expect(page.getByLabel('Equipment')).toHaveValue('none');
     await expect(page.getByLabel('Difficulty')).toHaveValue('beginner');
@@ -222,7 +225,7 @@ test.describe('exercise library', () => {
   }) => {
     const context = await browser.newContext({ javaScriptEnabled: false });
     const page = await context.newPage();
-    await page.goto('/exercises/bodyweight-squat/');
+    await page.goto(sitePath('/exercises/bodyweight-squat/'));
     await expect(
       page.getByRole('heading', { level: 1, name: 'Bodyweight squat' }),
     ).toBeVisible();
@@ -244,7 +247,7 @@ test.describe('local progress and guided mode', () => {
     page,
     context,
   }) => {
-    await page.goto('/my-progress/');
+    await page.goto(sitePath('/my-progress/'));
     await expect(page.locator('#progress-dashboard')).toBeVisible();
     const exportPromise = page.waitForEvent('download');
     await page.getByRole('button', { name: 'Export JSON' }).click();
@@ -294,7 +297,7 @@ test.describe('local progress and guided mode', () => {
   });
 
   test('upgrades version 1 IndexedDB records in place', async ({ page }) => {
-    await page.goto('/');
+    await page.goto(sitePath('/'));
     await page.evaluate(async () => {
       await new Promise<void>((resolve, reject) => {
         const deletion = indexedDB.deleteDatabase('workoutmatch');
@@ -357,7 +360,7 @@ test.describe('local progress and guided mode', () => {
       });
     });
 
-    await page.goto('/my-progress/');
+    await page.goto(sitePath('/my-progress/'));
     await expect(page.locator('#progress-dashboard')).toBeVisible();
     await expect(
       page.getByRole('heading', { name: 'Legacy workout' }),
@@ -370,7 +373,7 @@ test.describe('local progress and guided mode', () => {
   test('guided mode starts, pauses, skips, and confirms ending', async ({
     page,
   }) => {
-    await page.goto('/quick-workout/');
+    await page.goto(sitePath('/quick-workout/'));
     await page.getByRole('button', { name: 'Generate workout' }).click();
     await page
       .locator('[data-workout-result]')

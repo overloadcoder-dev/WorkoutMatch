@@ -9,7 +9,9 @@
       No valid temporary workout was found in this browser. Generate one, then
       choose Start guided mode.
     </p>
-    <a class="button" href="/generate/">Build a workout</a>
+    <a class="button" href={`${import.meta.env.BASE_URL}generate/`}
+      >Build a workout</a
+    >
   </div>
 
   <div id="guided-player" hidden>
@@ -83,7 +85,7 @@
         <h3>How to do it</h3>
         <ol data-instructions></ol>
         <p>
-          <a data-exercise-link href="/exercises/"
+          <a data-exercise-link href={`${import.meta.env.BASE_URL}exercises/`}
             >View full exercise guidance</a
           >
         </p>
@@ -136,10 +138,13 @@
       <button class="button" type="button" data-save-completion
         >Save completion locally</button
       >
-      <a class="button button-secondary" href="/my-progress/"
-        >View my progress</a
+      <a
+        class="button button-secondary"
+        href={`${import.meta.env.BASE_URL}my-progress/`}>View my progress</a
       >
-      <a class="button button-secondary" href="/quick-workout/">Build another</a
+      <a
+        class="button button-secondary"
+        href={`${import.meta.env.BASE_URL}quick-workout/`}>Build another</a
       >
     </div>
     <p class="status" data-save-status role="status" hidden></p>
@@ -523,7 +528,7 @@
       item.textContent = instruction;
       nodes.instructions.append(item);
     });
-    nodes.link.href = `/exercises/${step.item.exercise.slug}/`;
+    nodes.link.href = `${import.meta.env.BASE_URL}exercises/${step.item.exercise.slug}/`;
     nodes.link.textContent = `View full ${step.item.exercise.name} guidance`;
     const supportsWeight = step.item.exercise.equipment.some(
       (item) => item === 'one-dumbbell' || item === 'two-dumbbells',

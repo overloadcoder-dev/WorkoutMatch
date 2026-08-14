@@ -9,9 +9,11 @@ const environment = loadEnv(
   '',
 );
 const site = environment.PUBLIC_SITE_URL ?? 'https://workoutmatch.example';
+const base = environment.PUBLIC_BASE_PATH ?? '/';
 
 export default defineConfig({
   site,
+  base,
   output: 'static',
   trailingSlash: 'always',
   markdown: {

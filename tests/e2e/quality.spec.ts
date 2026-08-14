@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { sitePath } from './site-path';
 
 test('representative pages run without console or page errors', async ({
   page,
@@ -16,7 +17,7 @@ test('representative pages run without console or page errors', async ({
     '/calculators/bmi/',
     '/my-progress/',
   ]) {
-    await page.goto(path);
+    await page.goto(sitePath(path));
     if (path === '/generate/') {
       await page.getByRole('button', { name: 'Generate workout' }).click();
       await expect(page.locator('[data-workout-result]')).toBeVisible();
@@ -41,7 +42,7 @@ test('key routes reflow without horizontal page overflow at 320 CSS pixels', asy
     '/workouts/',
     '/my-progress/',
   ]) {
-    await page.goto(path);
+    await page.goto(sitePath(path));
     if (path === '/generate/') {
       await page.getByRole('button', { name: 'Generate workout' }).click();
       await expect(page.locator('[data-workout-result]')).toBeVisible();
